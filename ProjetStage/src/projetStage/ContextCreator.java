@@ -166,10 +166,6 @@ public class ContextCreator implements ContextBuilder<Object> {
 
                 // Debut
                 while (!actualGridBuildingList.isEmpty()) {
-                    /*buildingList.add(actualGridBuildingList.get(0)); // On ajoute le premier element qu'on trouve
-                    neiborghoodList.remove(actualGridBuildingList.get(0));
-					actualGridBuildingList.remove(0);*/
-
                     // On cherche les elements les plus proches entre eux
                     for (Building building : neiborghoodList) {
                         double dist = getMaxDistance(buildingList, building);
