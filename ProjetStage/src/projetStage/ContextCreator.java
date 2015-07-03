@@ -38,6 +38,7 @@ public class ContextCreator implements ContextBuilder<Object> {
     double DISTANCE_MAX;
     final double GRID_DIMENSION = 0.01;
 
+    // Coordonnées de l'île de la Réunion
     final double LONG_MIN = 55.215;
     final double LONG_MAX = 55.837;
     final double LAT_MIN = -21.389;
@@ -63,10 +64,14 @@ public class ContextCreator implements ContextBuilder<Object> {
             }
         }
 
-        System.out.println(RequestsHttp.getData());
+        //System.out.println(RequestsHttp.getData());
+
+        long time = System.currentTimeMillis();
 
         readParameters();
         buildMicrogrid(context, geography);
+
+        System.out.println("Time : " + (System.currentTimeMillis() - time));
 
         return context;
     }
