@@ -3,37 +3,37 @@
   <type>GIS 3D</type>
   <styles>
     <entry>
-      <string>projetStage.agents.UndifferentiatedBuilding</string>
-      <string>projetStage.agents.style.UndifferentiatedBuildingStyle</string>
+      <string>projetStage.agents.Microgrid</string>
+      <string>projetStage.agents.style.MicrogridStyle</string>
     </entry>
     <entry>
       <string>projetStage.agents.SportBuilding</string>
       <string>projetStage.agents.style.SportBuildingStyle</string>
     </entry>
     <entry>
+      <string>projetStage.agents.IndustrialBuilding</string>
+      <string>projetStage.agents.style.IndustrialBuildingStyle</string>
+    </entry>
+    <entry>
+      <string>projetStage.agents.UndifferentiatedBuilding</string>
+      <string>projetStage.agents.style.UndifferentiatedBuildingStyle</string>
+    </entry>
+    <entry>
       <string>projetStage.agents.NoticeableBuilding</string>
       <string>projetStage.agents.style.NoticeableBuildingStyle</string>
-    </entry>
-    <entry>
-      <string>projetStage.agents.Building</string>
-      <string>projetStage.agents.style.BuildingStyle</string>
-    </entry>
-    <entry>
-      <string>projetStage.agents.Microgrid</string>
-      <string>projetStage.agents.style.MicrogridStyle</string>
     </entry>
     <entry>
       <string>projetStage.ContextCreator</string>
       <string>repast.simphony.visualization.gis3D.style.DefaultMarkStyle</string>
     </entry>
     <entry>
-      <string>projetStage.agents.IndustrialBuilding</string>
-      <string>projetStage.agents.style.IndustrialBuildingStyle</string>
+      <string>projetStage.agents.Building</string>
+      <string>projetStage.agents.style.BuildingStyle</string>
     </entry>
   </styles>
   <editedStyles>
     <entry>
-      <string>projetStage.agents.UndifferentiatedBuilding</string>
+      <string>projetStage.agents.Microgrid</string>
       <null/>
     </entry>
     <entry>
@@ -41,15 +41,15 @@
       <null/>
     </entry>
     <entry>
+      <string>projetStage.agents.IndustrialBuilding</string>
+      <null/>
+    </entry>
+    <entry>
+      <string>projetStage.agents.UndifferentiatedBuilding</string>
+      <null/>
+    </entry>
+    <entry>
       <string>projetStage.agents.NoticeableBuilding</string>
-      <null/>
-    </entry>
-    <entry>
-      <string>projetStage.agents.Building</string>
-      <null/>
-    </entry>
-    <entry>
-      <string>projetStage.agents.Microgrid</string>
       <null/>
     </entry>
     <entry>
@@ -57,7 +57,7 @@
       <null/>
     </entry>
     <entry>
-      <string>projetStage.agents.IndustrialBuilding</string>
+      <string>projetStage.agents.Building</string>
       <null/>
     </entry>
   </editedStyles>
@@ -76,32 +76,32 @@
   <layoutInterval>0</layoutInterval>
   <layerOrder>
     <entry>
-      <string>projetStage.agents.UndifferentiatedBuilding</string>
-      <int>1</int>
+      <string>projetStage.agents.Microgrid</string>
+      <int>3</int>
     </entry>
     <entry>
       <string>projetStage.agents.SportBuilding</string>
       <int>0</int>
     </entry>
     <entry>
+      <string>projetStage.agents.IndustrialBuilding</string>
+      <int>4</int>
+    </entry>
+    <entry>
+      <string>projetStage.agents.UndifferentiatedBuilding</string>
+      <int>1</int>
+    </entry>
+    <entry>
       <string>projetStage.agents.NoticeableBuilding</string>
       <int>2</int>
-    </entry>
-    <entry>
-      <string>projetStage.agents.Building</string>
-      <int>6</int>
-    </entry>
-    <entry>
-      <string>projetStage.agents.Microgrid</string>
-      <int>3</int>
     </entry>
     <entry>
       <string>projetStage.ContextCreator</string>
       <int>5</int>
     </entry>
     <entry>
-      <string>projetStage.agents.IndustrialBuilding</string>
-      <int>4</int>
+      <string>projetStage.agents.Building</string>
+      <int>6</int>
     </entry>
   </layerOrder>
   <projections>

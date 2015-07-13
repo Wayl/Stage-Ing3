@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Polygon;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.opengis.feature.simple.SimpleFeature;
@@ -18,7 +20,6 @@ import projetStage.agents.Microgrid;
 import projetStage.agents.NoticeableBuilding;
 import projetStage.agents.SportBuilding;
 import projetStage.agents.UndifferentiatedBuilding;
-import projetStage.utils.RequestsHttp;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -43,15 +44,14 @@ public class ContextCreator implements ContextBuilder<Object> {
     final double LONG_MAX = 55.837;
     final double LAT_MIN = -21.389;
     final double LAT_MAX = -20.871;
-    final double LONG_GAP = LONG_MAX - LONG_MIN;
-    final double LAT_GAP = LAT_MAX - LAT_MIN;
 
-    final float PERCENT_NOTIC = 10;
+    /*final float PERCENT_NOTIC = 10;
     final float PERCENT_INDUS = 10;
     final float PERCENT_SPORT = 10;
-    final float PERCENT_UNDIF = 70;
+    final float PERCENT_UNDIF = 70;*/
 
     final Map<Coordinate, List<Building>> buildingMap = new HashMap<>();
+    final Map<Coordinate, List<Microgrid>> microgridMap = new HashMap<>();
 
     public Context<Object> build(Context<Object> context) {
         System.out.println("****** Initialisation ******");
@@ -61,6 +61,7 @@ public class ContextCreator implements ContextBuilder<Object> {
         for (double x = (int)(LONG_MIN * 1000); x < (int)(LONG_MAX * 1000); x += (int)(GRID_DIMENSION * 1000)) {
             for (double y = (int)(LAT_MIN * 1000); y < (int)(LAT_MAX * 1000); y += (int)(GRID_DIMENSION * 1000)) {
                 buildingMap.put(new Coordinate(x / 1000, y / 1000), new ArrayList<Building>());
+                microgridMap.put(new Coordinate(x / 1000, y / 1000), new ArrayList<Microgrid>());
             }
         }
 
@@ -82,24 +83,24 @@ public class ContextCreator implements ContextBuilder<Object> {
     public void readParameters() {
         Parameters params = RunEnvironment.getInstance().getParameters();
         List<String> types = new ArrayList<>();
-        List<String> villes = new ArrayList<>();
+        List<String> cities = new ArrayList<>();
 
         if (params.getBoolean("Batiments industriels")) types.add("industriel");
         if (params.getBoolean("Batiments remarquables")) types.add("remarquable");
         if (params.getBoolean("Batiments indifferencies")) types.add("indifferencie");
         if (params.getBoolean("Batiments sportifs")) types.add("sport");
 
-        if (params.getBoolean("St-Andre")) villes.add("st-Andre");
-        if (params.getBoolean("St-Benoit")) villes.add("st-Benoit");
-        if (params.getBoolean("St-Denis")) villes.add("st-Denis");
-        if (params.getBoolean("St-Leu")) villes.add("st-Leu");
-        if (params.getBoolean("St-Louis")) villes.add("st-Louis");
-        if (params.getBoolean("St-Paul")) villes.add("st-Paul");
-        if (params.getBoolean("St-Pierre")) villes.add("st-Pierre");
-        if (params.getBoolean("St-Joseph")) villes.add("no-mans-land");
+        if (params.getBoolean("St-Andre")) cities.add("st-Andre");
+        if (params.getBoolean("St-Benoit")) cities.add("st-Benoit");
+        if (params.getBoolean("St-Denis")) cities.add("st-Denis");
+        if (params.getBoolean("St-Leu")) cities.add("st-Leu");
+        if (params.getBoolean("St-Louis")) cities.add("st-Louis");
+        if (params.getBoolean("St-Paul")) cities.add("st-Paul");
+        if (params.getBoolean("St-Pierre")) cities.add("st-Pierre");
+        if (params.getBoolean("St-Joseph")) cities.add("no-mans-land");
 
         for (String type : types) {
-            for (String ville : villes) {
+            for (String ville : cities) {
                 loadFeatures("../data/buildings/" + ville + "/" + type + "/building-" + type + "-" + ville + ".shp");
             }
         }
@@ -114,12 +115,10 @@ public class ContextCreator implements ContextBuilder<Object> {
      * @param filename Nom du fichier a charger
      */
     private void loadFeatures(final String filename) {
-        SimpleFeatureIterator fiter = null;
-        ShapefileDataStore store = null;
         try {
             URL url = new File(filename).toURL();
-            store = new ShapefileDataStore(url);
-            fiter = store.getFeatureSource().getFeatures().features();
+            ShapefileDataStore store = new ShapefileDataStore(url);
+            SimpleFeatureIterator fiter = store.getFeatureSource().getFeatures().features();
             while (fiter.hasNext()) {
                 Building building = null;
                 SimpleFeature feat = fiter.next();
@@ -138,124 +137,140 @@ public class ContextCreator implements ContextBuilder<Object> {
                     if (filename.contains("sport"))
                         building = new SportBuilding(id, nature, geom);
                 }
-
                 buildingMap.get(hashForGrid(geom.getCentroid().getCoordinate())).add(building);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
+
             fiter.close();
             store.dispose();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
     /**
      * Construction des microgrids
      *
-     * @param context
-     * @param geography
+     * @param context Context
+     * @param geography Geography
      */
     public void buildMicrogrid(final Context<Object> context, final Geography<Object> geography) {
         System.out.println("****** Microgrids' creation ******");
         final List<Building> buildingList = new ArrayList<>(); //
+        final List<Building> losts = new ArrayList<>();
         int compteur = 0;
-        int lost = 0;
 
         for (Coordinate key : buildingMap.keySet()) {
             List<Building> actualGridBuildingList = buildingMap.get(key);
 
             if (!actualGridBuildingList.isEmpty()) {
                 // Recuperation de la liste des cases voisines sur la grille
-                List<Building> neiborghoodList = new ArrayList<>();
-                loadNeiborghood(key, neiborghoodList);
+                List<Building> neighborhoodList = loadNeighborhood(key, buildingMap);
 
                 // Debut
                 while (!actualGridBuildingList.isEmpty()) {
                     // On cherche les elements les plus proches entre eux
-                    for (Building building : neiborghoodList) {
-                        double dist = getMaxDistance(buildingList, building);
-                        if (buildingList.size() < NB_BUILDING_MAX) { // S'il reste de la place dans la liste
-                            if (dist < DISTANCE_MAX) { // S'il n'est pas trop loin
-                                buildingList.add(building);
-                            }
-                        } else if (dist < DISTANCE_MAX * 2) {
+                    Coordinate barycentre = null;
+                    for (Building building : neighborhoodList) {
+                        if (barycentre == null) {
                             buildingList.add(building);
-                            removeFarthest(buildingList);
+                            barycentre = getCentroid(buildingList);
+                        } else {
+                            double dist = building.getGeometry().getCoordinate().distance(barycentre);
+                            if (buildingList.size() < NB_BUILDING_MAX) { // S'il reste de la place dans la liste
+                                if (dist < DISTANCE_MAX) { // S'il n'est pas trop loin
+                                    buildingList.add(building);
+                                    barycentre = getCentroid(buildingList);
+                                }
+                            } else if (dist < DISTANCE_MAX * 1.5) {
+                                buildingList.add(building);
+                                removeFarthest(buildingList);
+                                barycentre = getCentroid(buildingList);
+                            }
                         }
                     }
 
-                    if (buildingList.size() < NB_BUILDING_MIN) { // Creation de batiments isoles
-                        lost += buildingList.size();
-                        for (Building building : buildingList) {
-                            context.add(building);
-                            geography.move(building, building.getGeometry());
-                        }
+                    if (buildingList.size() < NB_BUILDING_MIN) { // On stocke les batiments les plus isolés dans une liste
+                        losts.addAll(buildingList);
                     } else { // On cree la microgrid avec les batiments selectionnes
                         compteur += buildingList.size();
-                        Microgrid microgrid = new Microgrid(context, geography, buildingList);
+                        Microgrid microgrid = new Microgrid(context, geography, buildingList, barycentre);
+                        microgridMap.get(hashForGrid(microgrid.getCentroid())).add(microgrid);
                         context.add(microgrid);
                     }
+                    System.out.println("size : " + buildingList.size());
                     System.out.println("compteur : " + compteur);
 
                     // On supprime les batiments selectionnes de la liste des features
                     actualGridBuildingList.removeAll(buildingList);
-                    neiborghoodList.removeAll(buildingList);
+                    neighborhoodList.removeAll(buildingList);
                     removeFromGrid(buildingMap, buildingList);
                     buildingList.clear();
                 }
             }
         }
-        System.out.println("lost : " + lost);
+
+        // Récupération des batiments perdus
+        System.out.println("Récupération de " + losts.size() + " batiments");
+        Coordinate key = null;
+        List<Microgrid> neighborhoodList = new ArrayList<>();
+        for (Building building : losts) {
+            final Coordinate currentKey = hashForGrid(building.getGeometry().getCoordinate());
+            if(currentKey != key) {
+                neighborhoodList = loadNeighborhood(currentKey, microgridMap);
+                key = currentKey;
+            }
+
+            double dist = Double.MAX_VALUE;
+            Microgrid tmp_grid = null;
+            for(Microgrid microgrid : neighborhoodList) {
+                double tmp_dist = building.getGeometry().getCoordinate().distance(microgrid.getCentroid());
+                if(tmp_dist < dist) {
+                    tmp_grid = microgrid;
+                    dist = tmp_dist;
+                }
+            }
+            if(tmp_grid != null && dist < DISTANCE_MAX) {
+                tmp_grid.addBuilding(building);
+            } else {
+                context.add(building);
+                geography.move(building, building.getGeometry());
+            }
+        }
+
         System.out.println("****** End of microgrids' creation ******");
     }
 
     /**
      * Chargement des cases voisines a la case donc les coordonnees sont "coord"
      *
-     * @param coord                Coordonnee d'une case de la grille
-     * @param noticNeiborghoodList La liste dans laquelle ajouter les voisins
+     * @param coord Coordonnee d'une case de la grille
+     * @param map   map dans laquelle on va chercher les voisins
+     *
+     * @return La liste de voisins
      */
-    public void loadNeiborghood(Coordinate coord, List<Building> noticNeiborghoodList) {
-        noticNeiborghoodList.addAll(buildingMap.get(coord));
+    public <T> List<T> loadNeighborhood(Coordinate coord, Map<Coordinate, List<T>> map) {
+        List<T> neighborhoodList = new ArrayList<>();
+
+        neighborhoodList.addAll(map.get(coord));
         if (buildingMap.containsKey(new Coordinate(coord.x + GRID_DIMENSION, coord.y))) // Est
-            noticNeiborghoodList.addAll(buildingMap.get(new Coordinate(coord.x + GRID_DIMENSION, coord.y)));
+            neighborhoodList.addAll(map.get(new Coordinate(coord.x + GRID_DIMENSION, coord.y)));
         if (buildingMap.containsKey(new Coordinate(coord.x + GRID_DIMENSION, coord.y + GRID_DIMENSION))) // Sud-Est
-            noticNeiborghoodList.addAll(buildingMap.get(new Coordinate(coord.x + GRID_DIMENSION, coord.y + GRID_DIMENSION)));
+            neighborhoodList.addAll(map.get(new Coordinate(coord.x + GRID_DIMENSION, coord.y + GRID_DIMENSION)));
         if (buildingMap.containsKey(new Coordinate(coord.x, coord.y + GRID_DIMENSION))) // Sud
-            noticNeiborghoodList.addAll(buildingMap.get(new Coordinate(coord.x, coord.y + GRID_DIMENSION)));
+            neighborhoodList.addAll(map.get(new Coordinate(coord.x, coord.y + GRID_DIMENSION)));
         if (buildingMap.containsKey(new Coordinate(coord.x - GRID_DIMENSION, coord.y + GRID_DIMENSION))) // Sud-Ouest
-            noticNeiborghoodList.addAll(buildingMap.get(new Coordinate(coord.x - GRID_DIMENSION, coord.y + GRID_DIMENSION)));
+            neighborhoodList.addAll(map.get(new Coordinate(coord.x - GRID_DIMENSION, coord.y + GRID_DIMENSION)));
         if (buildingMap.containsKey(new Coordinate(coord.x - GRID_DIMENSION, coord.y))) // Ouest
-            noticNeiborghoodList.addAll(buildingMap.get(new Coordinate(coord.x - GRID_DIMENSION, coord.y)));
+            neighborhoodList.addAll(map.get(new Coordinate(coord.x - GRID_DIMENSION, coord.y)));
         if (buildingMap.containsKey(new Coordinate(coord.x - GRID_DIMENSION, coord.y - GRID_DIMENSION))) // Nord-Ouest
-            noticNeiborghoodList.addAll(buildingMap.get(new Coordinate(coord.x - GRID_DIMENSION, coord.y - GRID_DIMENSION)));
+            neighborhoodList.addAll(map.get(new Coordinate(coord.x - GRID_DIMENSION, coord.y - GRID_DIMENSION)));
         if (buildingMap.containsKey(new Coordinate(coord.x, coord.y - GRID_DIMENSION))) // Nord
-            noticNeiborghoodList.addAll(buildingMap.get(new Coordinate(coord.x, coord.y - GRID_DIMENSION)));
+            neighborhoodList.addAll(map.get(new Coordinate(coord.x, coord.y - GRID_DIMENSION)));
         if (buildingMap.containsKey(new Coordinate(coord.x + GRID_DIMENSION, coord.y - GRID_DIMENSION))) // Nord-Est
-            noticNeiborghoodList.addAll(buildingMap.get(new Coordinate(coord.x + GRID_DIMENSION, coord.y - GRID_DIMENSION)));
+            neighborhoodList.addAll(map.get(new Coordinate(coord.x + GRID_DIMENSION, coord.y - GRID_DIMENSION)));
+
+        return neighborhoodList;
     }
-
-    /**
-     * Retourne la distance maximale entre un batiment (feature) et les batiments contenus dans buildingList
-     *
-     * @param buildingList Liste de batiments
-     * @param feature      Un batiment
-     *
-     * @return La distance maximale separant feature de buildingList
-     */
-    public double getMaxDistance(final List<Building> buildingList, final Building feature) {
-        Coordinate coord = feature.getGeometry().getCentroid().getCoordinate();
-        double dist = 0;
-
-        for (Building building : buildingList) {
-            double tmpDist = building.getGeometry().getCentroid().getCoordinate().distance(coord);
-            if (tmpDist > dist)
-                dist = tmpDist;
-        }
-
-        return dist;
-    }
-
 
     /**
      * Calcule le barycentre des batiments contenus dans buildingList et supprime le batiment le plus eloigne du barycentre
@@ -263,17 +278,7 @@ public class ContextCreator implements ContextBuilder<Object> {
      * @param buildingList Une liste de batiments
      */
     public void removeFarthest(final List<Building> buildingList) {
-        double x = 0;
-        double y = 0;
-
-        for (Building building : buildingList) {
-            final Coordinate coord = building.getGeometry().getCentroid().getCoordinate();
-            x += coord.x;
-            y += coord.y;
-        }
-        x = x / buildingList.size();
-        y = y / buildingList.size();
-        final Coordinate center = new Coordinate(x, y);
+        final Coordinate center = getCentroid(buildingList);
 
         Building farthest = null;
         double dist = 0;
@@ -322,6 +327,20 @@ public class ContextCreator implements ContextBuilder<Object> {
         }
     }
 
+    /**
+     * Calcule le barycentre des batiments présents dans buildingList
+     *
+     * @param buildingList La list de batiments
+     *
+     * @return Le barycentre des batiments
+     */
+    public Coordinate getCentroid(List<Building> buildingList) {
+        Geometry buildingCenters = new Polygon(null, null, new GeometryFactory());
+        for (Building building : buildingList) {
+            buildingCenters = buildingCenters.union(building.getGeometry().getCentroid());
+        }
+        return buildingCenters.getCentroid().getCoordinate();
+    }
 }
 
 	/*int i = 0;

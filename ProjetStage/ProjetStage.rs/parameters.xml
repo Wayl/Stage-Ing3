@@ -40,12 +40,12 @@
 			converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
 	/>
 	<parameter name="St-Denis" displayName="St-Denis" type="boolean" 
-			defaultValue="true" 
+			defaultValue="false"
 			isReadOnly="false" 
 			converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
 	/>
 	<parameter name="St-Leu" displayName="St-Leu" type="boolean" 
-			defaultValue="false" 
+			defaultValue="true"
 			isReadOnly="false" 
 			converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
 	/>
