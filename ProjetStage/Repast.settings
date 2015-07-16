@@ -12,6 +12,6 @@
     <string>SettingsRegistryId</string>
     <string>Repast.registry</string>
     <string>LastLoadedScenario</string>
-    <string>/home/wayl/Stage-Ing3/ProjetStage/ProjetStage.rs</string>
+    <string>/home/wayl/Stage-Ing3/ProjetStage/./ProjetStage.rs</string>
   </hashtable>
 </simphony.settings.SettingsRegistry>

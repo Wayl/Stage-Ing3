@@ -3,20 +3,24 @@
   <type>GIS 3D</type>
   <styles>
     <entry>
-      <string>projetStage.agents.Microgrid</string>
-      <string>projetStage.agents.style.MicrogridStyle</string>
+      <string>projetStage.agents.Mark</string>
+      <string>projetStage.agents.style.StyleMark</string>
     </entry>
     <entry>
       <string>projetStage.agents.SportBuilding</string>
       <string>projetStage.agents.style.SportBuildingStyle</string>
     </entry>
     <entry>
-      <string>projetStage.agents.IndustrialBuilding</string>
-      <string>projetStage.agents.style.IndustrialBuildingStyle</string>
+      <string>projetStage.agents.Microgrid</string>
+      <string>projetStage.agents.style.MicrogridStyle</string>
     </entry>
     <entry>
       <string>projetStage.agents.UndifferentiatedBuilding</string>
       <string>projetStage.agents.style.UndifferentiatedBuildingStyle</string>
+    </entry>
+    <entry>
+      <string>projetStage.agents.IndustrialBuilding</string>
+      <string>projetStage.agents.style.IndustrialBuildingStyle</string>
     </entry>
     <entry>
       <string>projetStage.agents.NoticeableBuilding</string>
@@ -33,7 +37,7 @@
   </styles>
   <editedStyles>
     <entry>
-      <string>projetStage.agents.Microgrid</string>
+      <string>projetStage.agents.Mark</string>
       <null/>
     </entry>
     <entry>
@@ -41,11 +45,15 @@
       <null/>
     </entry>
     <entry>
-      <string>projetStage.agents.IndustrialBuilding</string>
+      <string>projetStage.agents.Microgrid</string>
       <null/>
     </entry>
     <entry>
       <string>projetStage.agents.UndifferentiatedBuilding</string>
+      <null/>
+    </entry>
+    <entry>
+      <string>projetStage.agents.IndustrialBuilding</string>
       <null/>
     </entry>
     <entry>
@@ -71,25 +79,29 @@
     <pType>LAST</pType>
     <duration>-1.0</duration>
     <frequency>REPEAT</frequency>
-    <hashCode>774715934</hashCode>
+    <hashCode>2087988447</hashCode>
   </schedParams>
   <layoutInterval>0</layoutInterval>
   <layerOrder>
     <entry>
-      <string>projetStage.agents.Microgrid</string>
-      <int>3</int>
+      <string>projetStage.agents.Mark</string>
+      <int>7</int>
     </entry>
     <entry>
       <string>projetStage.agents.SportBuilding</string>
       <int>0</int>
     </entry>
     <entry>
-      <string>projetStage.agents.IndustrialBuilding</string>
-      <int>4</int>
+      <string>projetStage.agents.Microgrid</string>
+      <int>3</int>
     </entry>
     <entry>
       <string>projetStage.agents.UndifferentiatedBuilding</string>
       <int>1</int>
+    </entry>
+    <entry>
+      <string>projetStage.agents.IndustrialBuilding</string>
+      <int>4</int>
     </entry>
     <entry>
       <string>projetStage.agents.NoticeableBuilding</string>

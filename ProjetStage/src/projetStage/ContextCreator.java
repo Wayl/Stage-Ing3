@@ -101,7 +101,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 
         for (String type : types) {
             for (String ville : cities) {
-                loadFeatures("../data/buildings/" + ville + "/" + type + "/building-" + type + "-" + ville + ".shp");
+                loadFeatures("./data/buildings/" + ville + "/" + type + "/building-" + type + "-" + ville + ".shp");
             }
         }
 

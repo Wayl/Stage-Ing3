@@ -3,11 +3,7 @@ package projetStage.agents;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.*;
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
 
 import repast.simphony.context.Context;
@@ -16,6 +12,7 @@ import repast.simphony.space.gis.Geography;
 public class Microgrid {
     private Context<Object> context;
     private Geography<Object> geography;
+    private Mark mark;
     private List<Building> buildingList;    // Liste des batiments contenus dans cette microgrid
     private Geometry convexHull;    // Plus petit polygone convexe contenant tous les batiments de la microgrid
     private LineString line;    // Ligne représentant convexHull
@@ -46,7 +43,14 @@ public class Microgrid {
      */
     public Microgrid(Context<Object> context, Geography<Object> geography, List<Building> featureList, Coordinate centroid) {
         this(context, geography);
-        setCentroid(centroid);
+
+        // Création de la marque
+        mark = new Mark(Integer.toString(featureList.size()));
+        context.add(mark);
+        Coordinate[] coordinates = new Coordinate[1];
+        coordinates[0] = centroid;
+        CoordinateArraySequence sequence = new CoordinateArraySequence(coordinates);
+        geography.move(mark, new Point(sequence, new GeometryFactory()));
 
         Geometry centerList = new Polygon(null, null, new GeometryFactory());
         for (Building building : featureList) {
@@ -57,6 +61,7 @@ public class Microgrid {
             centerList = centerList.union(geom.getCentroid());
         }
         nbBatiments = buildingList.size();
+        setCentroid(centroid);
         convexHull = centerList.convexHull();
         buildMicrogrid();
     }
