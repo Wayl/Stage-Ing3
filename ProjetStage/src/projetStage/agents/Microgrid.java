@@ -51,14 +51,6 @@ public class Microgrid {
     public Microgrid(Context<Object> context, Geography<Object> geography, int id, List<Building> featureList, Coordinate centroid) {
         this(context, geography, id);
 
-        // Création de la marque
-        mark = new Mark(featureList.size());
-        context.add(mark);
-        Coordinate[] coordinates = new Coordinate[1];
-        coordinates[0] = centroid;
-        CoordinateArraySequence sequence = new CoordinateArraySequence(coordinates);
-        geography.move(mark, new Point(sequence, new GeometryFactory()));
-
         // Initialisation buildingList, centerList, convexHull
         Geometry centerList = new Polygon(null, null, new GeometryFactory());
         for (Building building : featureList) {
@@ -69,8 +61,16 @@ public class Microgrid {
             context.add(building);
             geography.move(building, geom);
         }
-        setCentroid(centroid);
+        setCentroid(centerList.getCentroid().getCoordinate());
         convexHull = centerList.convexHull();
+
+        // Création de la marque
+        mark = new Mark(featureList.size());
+        context.add(mark);
+        Coordinate[] coordinates = new Coordinate[1];
+        coordinates[0] = getCentroid();
+        CoordinateArraySequence sequence = new CoordinateArraySequence(coordinates);
+        geography.move(mark, new Point(sequence, new GeometryFactory()));
 
         // Construction du polygon représentant la microgrid
         buildMicrogrid();
