@@ -49,7 +49,7 @@ public class StyleMark implements MarkStyle<Mark> {
             return iconEclair;
         else
             return iconEclairRouge;
-        //BufferedImage image = PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, new Dimension(5, 5), 0.7f, color);
+        //BufferedImage image imgimgur= PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, new Dimension(5, 5), 0.7f, color);
     }
 
     @Override
@@ -89,7 +89,7 @@ public class StyleMark implements MarkStyle<Mark> {
 
     @Override
     public String getLabel(Mark mark) {
-        return mark.getLabel();
+        return Integer.toString(mark.getNbBuilding());
     }
 
     @Override

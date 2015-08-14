@@ -7,9 +7,12 @@ import com.vividsolutions.jts.geom.*;
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
 
 import repast.simphony.context.Context;
+import repast.simphony.engine.schedule.ScheduleParameters;
+import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.space.gis.Geography;
 
 public class Microgrid {
+    private int id;
     private Context<Object> context;
     private Geography<Object> geography;
     private Mark mark;
@@ -17,7 +20,8 @@ public class Microgrid {
     private Geometry convexHull;    // Plus petit polygone convexe contenant tous les batiments de la microgrid
     private LineString line;    // Ligne représentant convexHull
     private Coordinate centroid;    // Barycentre de la microgrid
-    private int nbBatiments = 0;
+
+    private double power;
 
     /**
      * Constructeur par défaut
@@ -25,12 +29,15 @@ public class Microgrid {
      * @param context   Context
      * @param geography Geography
      */
-    public Microgrid(Context<Object> context, Geography<Object> geography) {
+    public Microgrid(Context<Object> context, Geography<Object> geography, int id) {
         this.context = context;
         this.geography = geography;
+        this.id = id;
         buildingList = new ArrayList<>();
         convexHull = new Polygon(null, null, new GeometryFactory());
         line = null;
+
+        power = Math.random() * 100;
     }
 
     /**
@@ -41,30 +48,47 @@ public class Microgrid {
      * @param geography   Geography
      * @param featureList Liste des batiment à ajouter à la microgrid
      */
-    public Microgrid(Context<Object> context, Geography<Object> geography, List<Building> featureList, Coordinate centroid) {
-        this(context, geography);
+    public Microgrid(Context<Object> context, Geography<Object> geography, int id, List<Building> featureList, Coordinate centroid) {
+        this(context, geography, id);
 
         // Création de la marque
-        mark = new Mark(Integer.toString(featureList.size()));
+        mark = new Mark(featureList.size());
         context.add(mark);
         Coordinate[] coordinates = new Coordinate[1];
         coordinates[0] = centroid;
         CoordinateArraySequence sequence = new CoordinateArraySequence(coordinates);
         geography.move(mark, new Point(sequence, new GeometryFactory()));
 
+        // Initialisation buildingList, centerList, convexHull
         Geometry centerList = new Polygon(null, null, new GeometryFactory());
         for (Building building : featureList) {
             Geometry geom = building.getGeometry();
             buildingList.add(building);
-            //context.add(building);
-            //geo.move(building, geom);
             centerList = centerList.union(geom.getCentroid());
+            // Affichage de tous les batiments :
+            context.add(building);
+            geography.move(building, geom);
         }
-        nbBatiments = buildingList.size();
         setCentroid(centroid);
         convexHull = centerList.convexHull();
+
+        // Construction du polygon représentant la microgrid
         buildMicrogrid();
     }
+
+
+    /**
+     * STEP
+     *
+     * Méthode effectuée à chaque step
+     */
+    @ScheduledMethod(start = 1, interval = 1, priority = ScheduleParameters.FIRST_PRIORITY)
+    public void step() {
+        power -= 1;
+        if (power < 0)
+            mark.setPowerOn(false);
+    }
+
 
     /**
      * Construction visuelle de la microgrid
@@ -79,7 +103,7 @@ public class Microgrid {
             context.add(line);
             geography.move(this, line);
         } else {
-            final Geography<Object> geo = (Geography<Object>) context.getProjection("Geography");
+            final Geography<Object> geo = (Geography<Object>)context.getProjection("Geography");
             context.add(buildingList.get(0));
             geo.move(buildingList.get(0), buildingList.get(0).getGeometry());
         }
@@ -92,12 +116,20 @@ public class Microgrid {
      */
     public void addBuilding(Building building) {
         buildingList.add(building);
-        nbBatiments = buildingList.size();
         if (!convexHull.contains(building.getGeometry()))
             convexHull = convexHull.union(building.getGeometry()).convexHull();
 
         buildMicrogrid();
+        updateNbBuilding();
     }
+
+    /**
+     * Mise à jour de la marque affichant le nombre de batiments
+     */
+    public void updateNbBuilding() {
+        mark.setNbBuilding(buildingList.size());
+    }
+
 
     public Coordinate getCentroid() {
         return centroid;
@@ -107,11 +139,19 @@ public class Microgrid {
         this.centroid = centroid;
     }
 
-    public int getNbBatiments() {
-        return nbBatiments;
+    public double getPower() {
+        return power;
     }
 
-    public void setNbBatiments(int nbBatiments) {
-        this.nbBatiments = nbBatiments;
+    public void setPower(double power) {
+        this.power = power;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }
