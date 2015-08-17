@@ -39,6 +39,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 
     private final Map<Coordinate, List<Building>> buildingMap = new HashMap<>();
     private final Map<Coordinate, List<Microgrid>> microgridMap = new HashMap<>();
+    private final TreeMap<Double, List<Coordinate>> keyMap = new TreeMap<>();
 
     public Context<Object> build(Context<Object> context) {
         System.out.println("****** Initialisation ******");
@@ -91,17 +92,32 @@ public class ContextCreator implements ContextBuilder<Object> {
         // Création de la grille
         for (double x = LONG_MIN; x < LONG_MAX; x += GRID_DIMENSION) {
             for (double y = LAT_MIN; y < LAT_MAX; y += GRID_DIMENSION) {
-                buildingMap.put(new Coordinate(x, y), new ArrayList<Building>());
-                microgridMap.put(new Coordinate(x, y), new ArrayList<Microgrid>());
+                Coordinate coord = new Coordinate(x, y);
+                buildingMap.put(coord, new ArrayList<Building>());
+                microgridMap.put(coord, new ArrayList<Microgrid>());
             }
         }
 
+        // Chargement des batiments
         for (String type : types) {
             for (String ville : cities) {
                 loadFeatures("./data/buildings/" + ville + "/" + type + "/building-" + type + "-" + ville + ".shp");
             }
         }
 
+        // Récupération des cases de la grille non vide et triage en fonction de leur distance au centre de la carte
+        Coordinate center = new Coordinate((LONG_MAX + LONG_MIN) / 2, (LAT_MAX + LAT_MIN) / 2);
+        Iterator<Map.Entry<Coordinate, List<Building>>> ite = buildingMap.entrySet().iterator();
+        while (ite.hasNext()) {
+            Map.Entry<Coordinate, List<Building>> entry = ite.next();
+            if (entry.getValue().size() > 0) {
+                double dist = -entry.getKey().distance(center);
+                if (!keyMap.containsKey(dist)) {
+                    keyMap.put(dist, new ArrayList<Coordinate>());
+                }
+                keyMap.get(dist).add(entry.getKey());
+            }
+        }
     }
 
     /**
@@ -156,60 +172,66 @@ public class ContextCreator implements ContextBuilder<Object> {
         int compteur = 0;
         int compteurGrid = 0;
 
-        for (Coordinate key : buildingMap.keySet()) {
-            List<Building> actualGridBuildingList = buildingMap.get(key);
+        Iterator<Map.Entry<Double, List<Coordinate>>> it = keyMap.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<Double, List<Coordinate>> entry = it.next();
+            for (Coordinate coord : entry.getValue()) {
+                List<Building> actualGridBuildingList = buildingMap.get(coord);
 
-            if (!actualGridBuildingList.isEmpty()) {
-                // Recuperation de la liste des cases voisines sur la grille
-                List<Building> neighborhoodList = loadNeighborhood(key, buildingMap);
-                neighborhoodList.addAll(actualGridBuildingList);
+                if (!actualGridBuildingList.isEmpty()) {
+                    // Recuperation de la liste des cases voisines sur la grille
+                    List<Building> neighborhoodList = loadNeighborhood(coord, buildingMap);
+                    neighborhoodList.addAll(actualGridBuildingList);
 
-                // Debut While
-                while (!actualGridBuildingList.isEmpty()) {
-                    // On prend un batiment au hasard
-                    Coordinate center = actualGridBuildingList.get(0).getGeometry().getCentroid().getCoordinate();
-                    buildingList.add(actualGridBuildingList.get(0));
-                    buildingList.get(0).setDistance(0);
-                    neighborhoodList.remove(actualGridBuildingList.get(0));
+                    // Debut While
+                    while (!actualGridBuildingList.isEmpty()) {
+                        // On prend un batiment au hasard
+                        Coordinate center = actualGridBuildingList.get(0).getGeometry().getCentroid().getCoordinate();
+                        buildingList.add(actualGridBuildingList.get(0));
+                        buildingList.get(0).setDistance(0);
+                        neighborhoodList.remove(actualGridBuildingList.get(0));
 
-                    // On prend tous les batiments qui sont à une distance inférieure à DISTANCE_MAX
-                    for (Building building : neighborhoodList) {
-                        building.setDistance(building.getGeometry().getCoordinate().distance(center));
-                        if (building.getDistance() < DISTANCE_MAX)
-                            buildingList.add(building);
-                    }
-
-                    // Si il y a trop de batiments, on supprime les plus éloignés
-                    if (buildingList.size() > NB_BUILDING_MAX) {
-                        Collections.sort(buildingList);
-                        Collections.reverse(buildingList);
-                        for (int i = buildingList.size(); i > NB_BUILDING_MAX; --i) {
-                            buildingList.remove(buildingList.get(i - 1));
+                        // On prend tous les batiments qui sont à une distance inférieure à DISTANCE_MAX
+                        for (Building building : neighborhoodList) {
+                            building.setDistance(building.getGeometry().getCoordinate().distance(center));
+                            if (building.getDistance() < DISTANCE_MAX)
+                                buildingList.add(building);
                         }
-                    }
 
-                    // Traitement des batiments selectionnés pour constituer une microgrid ou les laisser à l'écart
-                    if (buildingList.size() < NB_BUILDING_MIN) {
-                        // On stocke les batiments les plus isolés dans une liste pour les retraiter ensuite
-                        losts.addAll(buildingList);
-                    } else {
-                        // On cree la microgrid avec les batiments selectionnés
-                        //compteur += buildingList.size();
-                        compteurGrid += 1;
-                        Microgrid microgrid = new Microgrid(context, geography, compteurGrid, buildingList, center);
-                        microgridMap.get(hashForGrid(microgrid.getCentroid())).add(microgrid);
-                        context.add(microgrid);
-                    }
-                    //System.out.println("compteur : " + compteur);
+                        // Si il y a trop de batiments, on supprime les plus éloignés
+                        if (buildingList.size() > NB_BUILDING_MAX) {
+                            Collections.sort(buildingList);
+                            Collections.reverse(buildingList);
+                            for (int i = buildingList.size(); i > NB_BUILDING_MAX; --i) {
+                                buildingList.remove(buildingList.get(i - 1));
+                            }
+                        }
 
-                    // On supprime les batiments selectionnés de la liste des features
-                    actualGridBuildingList.removeAll(buildingList);
-                    neighborhoodList.removeAll(buildingList);
-                    removeFromGrid(buildingMap, buildingList);
-                    buildingList.clear();
+                        // Traitement des batiments selectionnés pour constituer une microgrid ou les laisser à l'écart
+                        if (buildingList.size() < NB_BUILDING_MIN) {
+                            // On stocke les batiments les plus isolés dans une liste pour les retraiter ensuite
+                            losts.addAll(buildingList);
+                        } else {
+                            // On crée la microgrid avec les batiments selectionnés
+                            compteur += buildingList.size();
+                            compteurGrid += 1;
+                            Microgrid microgrid = new Microgrid(context, geography, compteurGrid, buildingList, center);
+                            microgridMap.get(hashForGrid(microgrid.getCentroid())).add(microgrid);
+                            context.add(microgrid);
+                        }
+
+                        // On supprime les batiments selectionnés de la liste des features
+                        actualGridBuildingList.removeAll(buildingList);
+                        neighborhoodList.removeAll(buildingList);
+                        for (Building building : buildingList) {
+                            buildingMap.get(hashForGrid(building.getGeometry().getCentroid().getCoordinate())).remove(building);
+                        }
+                        buildingList.clear();
+                    }
                 } // Fin While
             }
         }
+        System.out.println("compteur fin : " + compteur);
 
         // Récupération des batiments perdus
         System.out.println("Tentative de récupération de " + losts.size() + " batiments");
@@ -306,17 +328,5 @@ public class ContextCreator implements ContextBuilder<Object> {
         y -= GRID_DIMENSION;
 
         return new Coordinate(x, y);
-    }
-
-    /**
-     * Supprime la liste de batiments 'buildingList' de 'buildingsMaps'
-     *
-     * @param buildingsMap Map contenant tous les batiments a charger
-     * @param buildingList Liste des batiments a supprimer
-     */
-    public void removeFromGrid(Map<Coordinate, List<Building>> buildingsMap, List<Building> buildingList) {
-        for (Building building : buildingList) {
-            buildingsMap.get(hashForGrid(building.getGeometry().getCentroid().getCoordinate())).remove(building);
-        }
     }
 }
