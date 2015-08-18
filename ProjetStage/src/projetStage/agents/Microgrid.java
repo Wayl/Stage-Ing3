@@ -58,8 +58,8 @@ public class Microgrid {
             buildingList.add(building);
             centerList = centerList.union(geom.getCentroid());
             // Affichage de tous les batiments :
-            context.add(building);
-            geography.move(building, geom);
+            /*context.add(building);
+            geography.move(building, geom);*/
         }
         setCentroid(centerList.getCentroid().getCoordinate());
         convexHull = centerList.convexHull();
@@ -120,7 +120,7 @@ public class Microgrid {
             convexHull = convexHull.union(building.getGeometry()).convexHull();
 
         buildMicrogrid();
-        updateNbBuilding();
+        //updateNbBuilding();
     }
 
     /**

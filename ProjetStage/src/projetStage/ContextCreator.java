@@ -10,12 +10,7 @@ import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.opengis.feature.simple.SimpleFeature;
 
-import projetStage.agents.Building;
-import projetStage.agents.IndustrialBuilding;
-import projetStage.agents.Microgrid;
-import projetStage.agents.NoticeableBuilding;
-import projetStage.agents.SportBuilding;
-import projetStage.agents.UndifferentiatedBuilding;
+import projetStage.agents.*;
 
 import repast.simphony.context.Context;
 import repast.simphony.context.space.gis.GeographyFactoryFinder;
@@ -73,7 +68,6 @@ public class ContextCreator implements ContextBuilder<Object> {
         if (params.getBoolean("Batiments remarquables")) types.add("remarquable");
         if (params.getBoolean("Batiments indifferencies")) types.add("indifferencie");
         if (params.getBoolean("Batiments sportifs")) types.add("sport");
-
         if (params.getBoolean("St-Andre")) cities.add("st-Andre");
         if (params.getBoolean("St-Benoit")) cities.add("st-Benoit");
         if (params.getBoolean("St-Denis")) cities.add("st-Denis");
@@ -86,8 +80,10 @@ public class ContextCreator implements ContextBuilder<Object> {
         NB_BUILDING_MAX = params.getInteger("NB_BUILDING_MAX");
         DISTANCE_MAX = params.getDouble("DISTANCE_MAX");
         GRID_DIMENSION = DISTANCE_MAX * 2 * 1000;
+        String BEGIN_DATE = params.getString("BEGIN_DATE");
+        String END_DATE = params.getString("END_DATE");
 
-        System.out.println("GRID_DIMENSION : " + GRID_DIMENSION);
+        Meteo meteo = new Meteo(BEGIN_DATE, END_DATE);
 
         // Création de la grille
         for (double x = LONG_MIN; x < LONG_MAX; x += GRID_DIMENSION) {

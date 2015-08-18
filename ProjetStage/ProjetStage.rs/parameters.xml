@@ -1,84 +1,95 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <parameters>
-	<parameter name="randomSeed" displayName="Default Random Seed" type="int" 
-		defaultValue="__NULL__"
-		isReadOnly="false" 
-		converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
-	/>
-	
-	<!-- Types de batiments -->
-	<parameter name="Batiments industriels" displayName="Batiments industriels" type="boolean" 
-			defaultValue="true" 
-			isReadOnly="false" 
-			converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
-	/>
-	<parameter name="Batiments remarquables" displayName="Batiments remarquables" type="boolean" 
-			defaultValue="true" 
-			isReadOnly="false" 
-			converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
-	/>
-	<parameter name="Batiments indifferencies" displayName="Batiments indifferencies" type="boolean" 
-			defaultValue="true" 
-			isReadOnly="false" 
-			converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
-	/>
-	<parameter name="Batiments sportifs" displayName="Batiments sportifs" type="boolean" 
-			defaultValue="true" 
-			isReadOnly="false" 
-			converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
-	/>
-	
-	<!-- Villes -->
-	<parameter name="St-Andre" displayName="St-Andre" type="boolean" 
-			defaultValue="false" 
-			isReadOnly="false" 
-			converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
-	/>
-	<parameter name="St-Benoit" displayName="St-Benoit" type="boolean" 
-			defaultValue="false" 
-			isReadOnly="false" 
-			converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
-	/>
-	<parameter name="St-Denis" displayName="St-Denis" type="boolean" 
-			defaultValue="false"
-			isReadOnly="false" 
-			converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
-	/>
-	<parameter name="St-Leu" displayName="St-Leu" type="boolean" 
-			defaultValue="true"
-			isReadOnly="false" 
-			converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
-	/>
-	<parameter name="St-Louis" displayName="St-Louis" type="boolean" 
-			defaultValue="false" 
-			isReadOnly="false" 
-			converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
-	/>
-	<parameter name="St-Paul" displayName="St-Paul" type="boolean" 
-			defaultValue="false" 
-			isReadOnly="false" 
-			converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
-	/>
-	<parameter name="St-Pierre" displayName="St-Pierre" type="boolean" 
-			defaultValue="false" 
-			isReadOnly="false" 
-			converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
-	/>
-	<parameter name="St-Joseph" displayName="St-Joseph" type="boolean" 
-			defaultValue="false" 
-			isReadOnly="false" 
-			converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
-	/>
-	
-	<!-- Parametres divers -->
-	<parameter name="NB_BUILDING_MAX" displayName="Nombre max de batiments" type="int" 
-			defaultValue="20" 
-			isReadOnly="false" 
-			converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
-	/>
-	<parameter name="DISTANCE_MAX" displayName="Distance max a l'interieur d'une microgrid" type="double" 
-			defaultValue="0.001"
-			isReadOnly="false" 
-			converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
-	/>
+    <parameter name="randomSeed" displayName="Default Random Seed" type="int"
+               defaultValue="__NULL__"
+               isReadOnly="false"
+               converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
+            />
+
+    <!-- Types de batiments -->
+    <parameter name="Batiments industriels" displayName="Batiments industriels" type="boolean"
+               defaultValue="true"
+               isReadOnly="false"
+               converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
+            />
+    <parameter name="Batiments remarquables" displayName="Batiments remarquables" type="boolean"
+               defaultValue="true"
+               isReadOnly="false"
+               converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
+            />
+    <parameter name="Batiments indifferencies" displayName="Batiments indifferencies" type="boolean"
+               defaultValue="true"
+               isReadOnly="false"
+               converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
+            />
+    <parameter name="Batiments sportifs" displayName="Batiments sportifs" type="boolean"
+               defaultValue="true"
+               isReadOnly="false"
+               converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
+            />
+
+    <!-- Villes -->
+    <parameter name="St-Andre" displayName="St-Andre" type="boolean"
+               defaultValue="false"
+               isReadOnly="false"
+               converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
+            />
+    <parameter name="St-Benoit" displayName="St-Benoit" type="boolean"
+               defaultValue="false"
+               isReadOnly="false"
+               converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
+            />
+    <parameter name="St-Denis" displayName="St-Denis" type="boolean"
+               defaultValue="false"
+               isReadOnly="false"
+               converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
+            />
+    <parameter name="St-Leu" displayName="St-Leu" type="boolean"
+               defaultValue="true"
+               isReadOnly="false"
+               converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
+            />
+    <parameter name="St-Louis" displayName="St-Louis" type="boolean"
+               defaultValue="false"
+               isReadOnly="false"
+               converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
+            />
+    <parameter name="St-Paul" displayName="St-Paul" type="boolean"
+               defaultValue="false"
+               isReadOnly="false"
+               converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
+            />
+    <parameter name="St-Pierre" displayName="St-Pierre" type="boolean"
+               defaultValue="false"
+               isReadOnly="false"
+               converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
+            />
+    <parameter name="St-Joseph" displayName="St-Joseph" type="boolean"
+               defaultValue="false"
+               isReadOnly="false"
+               converter="repast.simphony.parameter.StringConverterFactory$BooleanConverter"
+            />
+
+    <!-- Parametres divers -->
+    <parameter name="NB_BUILDING_MAX" displayName="Nombre max de batiments" type="int"
+               defaultValue="20"
+               isReadOnly="false"
+               converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
+            />
+    <parameter name="DISTANCE_MAX" displayName="Distance max a l'interieur d'une microgrid"
+               type="double"
+               defaultValue="0.001"
+               isReadOnly="false"
+               converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
+            />
+    <parameter name="BEGIN_DATE" displayName="Date de début de la simulation" type="java.lang.String"
+               defaultValue="2013-01-01 02:05:30"
+               isReadOnly="false"
+               converter="repast.simphony.parameter.StringConverterFactory$StringStringConverter"
+            />
+    <parameter name="END_DATE" displayName="Date de fin de la simulation" type="java.lang.String"
+               defaultValue="2013-01-01 03:10:30"
+               isReadOnly="false"
+               converter="repast.simphony.parameter.StringConverterFactory$StringStringConverter"
+            />
 </parameters>
