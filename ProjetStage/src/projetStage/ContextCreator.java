@@ -47,6 +47,8 @@ public class ContextCreator implements ContextBuilder<Object> {
 
         // Lecture des paramètres
         readParameters();
+        // Création des producteurs d'énergie
+        Producer.createProducers(context, geography);
 
         // Création des microgrids
         buildMicrogrid(context, geography);
@@ -83,7 +85,7 @@ public class ContextCreator implements ContextBuilder<Object> {
         String BEGIN_DATE = params.getString("BEGIN_DATE");
         String END_DATE = params.getString("END_DATE");
 
-        Meteo meteo = new Meteo(BEGIN_DATE, END_DATE);
+        //Meteo meteo = new Meteo(BEGIN_DATE, END_DATE);
 
         // Création de la grille
         for (double x = LONG_MIN; x < LONG_MAX; x += GRID_DIMENSION) {

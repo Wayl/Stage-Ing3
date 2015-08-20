@@ -12,32 +12,35 @@ import repast.simphony.visualization.gis3D.style.SurfaceShapeStyle;
 public class UndifferentiatedBuildingStyle implements SurfaceShapeStyle<UndifferentiatedBuilding>{
 
 	@Override
-	public SurfaceShape getSurfaceShape(UndifferentiatedBuilding object, SurfaceShape shape) {
-		return new SurfacePolygon();
+	public SurfaceShape getSurfaceShape(UndifferentiatedBuilding undifferentiatedBuilding, SurfaceShape shape) {
+        if (shape == null)
+            return new SurfacePolygon();
+
+        return shape;
 	}
 
 	@Override
-	public Color getFillColor(UndifferentiatedBuilding zone) {
+	public Color getFillColor(UndifferentiatedBuilding undifferentiatedBuilding) {
 		return Color.GREEN;
 	}
 
 	@Override
-	public double getFillOpacity(UndifferentiatedBuilding obj) {
+	public double getFillOpacity(UndifferentiatedBuilding undifferentiatedBuilding) {
 		return 0.50;
 	}
 
 	@Override
-	public Color getLineColor(UndifferentiatedBuilding zone) {
+	public Color getLineColor(UndifferentiatedBuilding undifferentiatedBuilding) {
 		return Color.GREEN;
 	}
 
 	@Override
-	public double getLineOpacity(UndifferentiatedBuilding obj) {
+	public double getLineOpacity(UndifferentiatedBuilding undifferentiatedBuilding) {
 		return 0.5;
 	}
 
 	@Override
-	public double getLineWidth(UndifferentiatedBuilding obj) {
+	public double getLineWidth(UndifferentiatedBuilding undifferentiatedBuilding) {
 		return 0.1;
 	}
 }

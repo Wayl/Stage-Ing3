@@ -69,8 +69,7 @@ public class Microgrid {
         context.add(mark);
         Coordinate[] coordinates = new Coordinate[1];
         coordinates[0] = getCentroid();
-        CoordinateArraySequence sequence = new CoordinateArraySequence(coordinates);
-        geography.move(mark, new Point(sequence, new GeometryFactory()));
+        geography.move(mark, new Point(new CoordinateArraySequence(coordinates), new GeometryFactory()));
 
         // Construction du polygon représentant la microgrid
         buildMicrogrid();

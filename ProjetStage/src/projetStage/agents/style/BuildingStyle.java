@@ -12,32 +12,35 @@ import repast.simphony.visualization.gis3D.style.SurfaceShapeStyle;
 public class BuildingStyle implements SurfaceShapeStyle<Building>{
 
 	@Override
-	public SurfaceShape getSurfaceShape(Building object, SurfaceShape shape) {
-		return new SurfacePolygon();
+	public SurfaceShape getSurfaceShape(Building building, SurfaceShape shape) {
+        if(shape == null)
+		    return new SurfacePolygon();
+
+        return shape;
 	}
 
 	@Override
-	public Color getFillColor(Building zone) {
+	public Color getFillColor(Building building) {
 		return Color.BLACK;
 	}
 
 	@Override
-	public double getFillOpacity(Building obj) {
+	public double getFillOpacity(Building building) {
 		return 0.50;
 	}
 
 	@Override
-	public Color getLineColor(Building zone) {
+	public Color getLineColor(Building building) {
 		return Color.BLACK;
 	}
 
 	@Override
-	public double getLineOpacity(Building obj) {
+	public double getLineOpacity(Building building) {
 		return 0.5;
 	}
 
 	@Override
-	public double getLineWidth(Building obj) {
+	public double getLineWidth(Building building) {
 		return 0.1;
 	}
 }
