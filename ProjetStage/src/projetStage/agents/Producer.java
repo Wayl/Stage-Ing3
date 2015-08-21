@@ -18,6 +18,14 @@ public class Producer {
     private double power;
     private boolean isActive;
 
+
+    /**
+     * Constructeur par défaut
+     *
+     * @param name Nom du producteur
+     * @param type Type d'énergie utilisée
+     * @param power Puissance maximale du producteur en MW
+     */
     public Producer(String name, String type, double power) {
         this.name = name;
         this.type = type;
@@ -25,6 +33,12 @@ public class Producer {
         this.isActive = true;
     }
 
+    /**
+     * Création des producteurs d'électricité
+     *
+     * @param context   context
+     * @param geography geography
+     */
     public static void createProducers(final Context<Object> context, final Geography<Object> geography) {
         String filename = "./data/producers/producers.csv";
         System.out.println("-> Chargement Producteurs : " + filename);
@@ -45,7 +59,7 @@ public class Producer {
 
                 context.add(prod);
                 Coordinate[] coordinates = new Coordinate[1];
-                coordinates[0] = new Coordinate(Double.parseDouble(x+2), Double.parseDouble(y+2));
+                coordinates[0] = new Coordinate(Double.parseDouble(x + 2), Double.parseDouble(y + 2));
                 geography.move(prod, new Point(new CoordinateArraySequence(coordinates), new GeometryFactory()));
             }
             br.close();

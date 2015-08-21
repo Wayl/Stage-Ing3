@@ -65,10 +65,6 @@
             <null/>
         </entry>
         <entry>
-            <string>projetStage.ContextCreator</string>
-            <null/>
-        </entry>
-        <entry>
             <string>projetStage.agents.Building</string>
             <null/>
         </entry>
@@ -122,10 +118,6 @@
         <entry>
             <string>projetStage.agents.Mark</string>
             <int>7</int>
-        </entry>
-        <entry>
-            <string>projetStage.agents.ContexCreator</string>
-            <int>8</int>
         </entry>
     </layerOrder>
     <projections>
