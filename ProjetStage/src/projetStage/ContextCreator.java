@@ -19,6 +19,7 @@ import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.parameter.Parameters;
 import repast.simphony.space.gis.Geography;
 import repast.simphony.space.gis.GeographyParameters;
+import repast.simphony.util.collections.IndexedIterable;
 
 public class ContextCreator implements ContextBuilder<Object> {
     private final int NB_BUILDING_MIN = 2;
@@ -46,7 +47,7 @@ public class ContextCreator implements ContextBuilder<Object> {
         long time = System.currentTimeMillis();
 
         // Lecture des paramètres
-        readParameters();
+        readParameters(context);
         // Création des producteurs d'énergie
         Producer.createProducers(context, geography);
 
@@ -61,7 +62,7 @@ public class ContextCreator implements ContextBuilder<Object> {
     /**
      * Lecture des parametres et chargement des batiments
      */
-    public void readParameters() {
+    public void readParameters(Context<Object> context) {
         Parameters params = RunEnvironment.getInstance().getParameters();
         List<String> types = new ArrayList<>();
         List<String> cities = new ArrayList<>();
@@ -85,7 +86,8 @@ public class ContextCreator implements ContextBuilder<Object> {
         String BEGIN_DATE = params.getString("BEGIN_DATE");
         String END_DATE = params.getString("END_DATE");
 
-        //Meteo meteo = new Meteo(BEGIN_DATE, END_DATE);
+        Meteo meteo = new Meteo(BEGIN_DATE);
+        context.add(meteo);
 
         // Création de la grille
         for (double x = LONG_MIN; x < LONG_MAX; x += GRID_DIMENSION) {
