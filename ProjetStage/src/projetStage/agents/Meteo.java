@@ -16,11 +16,6 @@ import java.util.*;
 
 /**
  * Created by wayl on 17/08/15 !
- * <p/>
- * Données des gisements solaires DONE
- * profil de charge des batiments
- * <p/>
- * Consommation/production des microgrid
  */
 public class Meteo {
     private static final String URL_GETFROMCASSANDRA = "http://10.10.6.169:8080/rest/getFromCassandraToCsv";

@@ -15,6 +15,7 @@ import java.awt.image.BufferedImage;
  */
 public class ProducerStyle implements MarkStyle<Producer> {
     private final Offset labelOffset;
+    private double powerUsed=-1;
 
     public ProducerStyle() {
         labelOffset = new Offset(-8d, -1.7d, AVKey.FRACTION, AVKey.FRACTION);
@@ -23,10 +24,13 @@ public class ProducerStyle implements MarkStyle<Producer> {
 
     @Override
     public WWTexture getTexture(Producer producer, WWTexture texture) {
-        BufferedImage image;
-        if (texture == null) {
-            int dim = (int)(producer.getPower() / 20)+5;
-            image = PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, new Dimension(dim, dim), 1, Color.RED);
+        if (texture == null || powerUsed != producer.getPowerUsed()) {
+            BufferedImage image;
+            powerUsed = producer.getPowerUsed();
+            double frac = 255 * (producer.getPowerUsed() / producer.getPowerMax());
+            Color color = new Color((int)Math.floor(frac), 255 - (int)Math.floor(frac), 0);
+            int dim = (int)(producer.getPowerMax() / 20) + 5;
+            image = PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, new Dimension(dim, dim), 1, color);
             return new BasicWWTexture(image);
         }
         return texture;

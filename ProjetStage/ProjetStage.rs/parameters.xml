@@ -87,9 +87,4 @@
                isReadOnly="false"
                converter="repast.simphony.parameter.StringConverterFactory$StringStringConverter"
             />
-    <parameter name="END_DATE" displayName="Date de fin de la simulation" type="java.lang.String"
-               defaultValue="2013-01-01 03:10:00"
-               isReadOnly="false"
-               converter="repast.simphony.parameter.StringConverterFactory$StringStringConverter"
-            />
 </parameters>

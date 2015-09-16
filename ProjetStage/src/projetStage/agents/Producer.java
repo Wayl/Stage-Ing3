@@ -15,8 +15,9 @@ import java.io.*;
 public class Producer {
     private String name;
     private String type;
-    private double power;
-    private boolean isActive;
+    private double powerMax;
+    private double powerUsed;
+    private boolean active;
 
 
     /**
@@ -24,13 +25,14 @@ public class Producer {
      *
      * @param name Nom du producteur
      * @param type Type d'énergie utilisée
-     * @param power Puissance maximale du producteur en MW
+     * @param powerMax Puissance maximale du producteur en MW
      */
-    public Producer(String name, String type, double power) {
+    public Producer(String name, String type, double powerMax) {
         this.name = name;
         this.type = type;
-        this.power = power;
-        this.isActive = true;
+        this.powerMax = powerMax;
+        this.powerUsed = 0;
+        this.active = true;
     }
 
     /**
@@ -72,31 +74,32 @@ public class Producer {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getType() {
         return type;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public double getPowerMax() {
+        return powerMax;
     }
 
-    public double getPower() {
-        return power;
+    public double getPowerUsed() {
+        return powerUsed;
     }
 
-    public void setPower(double power) {
-        this.power = power;
+    public void setPowerUsed(double powerUsed) {
+        if(powerUsed > powerMax)
+            this.powerUsed = powerMax;
+        else if (powerUsed < 0)
+            this.powerUsed = 0;
+        else
+            this.powerUsed = powerUsed;
     }
 
     public boolean isActive() {
-        return isActive;
+        return active;
     }
 
-    public void setIsActive(boolean isActive) {
-        this.isActive = isActive;
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }

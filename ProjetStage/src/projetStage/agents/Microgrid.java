@@ -48,7 +48,7 @@ public class Microgrid {
      * @param geography   Geography
      * @param featureList Liste des batiment à ajouter à la microgrid
      */
-    public Microgrid(Context<Object> context, Geography<Object> geography, int id, List<Building> featureList, Coordinate centroid) {
+    public Microgrid(Context<Object> context, Geography<Object> geography, int id, List<Building> featureList) {
         this(context, geography, id);
 
         // Initialisation buildingList, centerList, convexHull
@@ -119,7 +119,7 @@ public class Microgrid {
             convexHull = convexHull.union(building.getGeometry()).convexHull();
 
         buildMicrogrid();
-        //updateNbBuilding();
+        updateNbBuilding();
     }
 
     /**
@@ -142,15 +142,7 @@ public class Microgrid {
         return power;
     }
 
-    public void setPower(double power) {
-        this.power = power;
-    }
-
     public int getId() {
         return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 }

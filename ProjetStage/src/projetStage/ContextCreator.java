@@ -19,10 +19,22 @@ import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.parameter.Parameters;
 import repast.simphony.space.gis.Geography;
 import repast.simphony.space.gis.GeographyParameters;
-import repast.simphony.util.collections.IndexedIterable;
+
+
+/**
+ * TODO
+ *
+ * Intégrer le profil de charge des batiments
+ * Calcul de la consommation/production des microgrids en fonction de l'heure et de la météo
+ * Avoir en temps réel la production des producteurs
+ * Pouvoir allumer, éteindre un producteur DONE
+ * récupérer les données
+ */
+
+
 
 public class ContextCreator implements ContextBuilder<Object> {
-    private final int NB_BUILDING_MIN = 2;
+    private final int NB_BUILDING_MIN = 1;
     private int NB_BUILDING_MAX;
     private double DISTANCE_MAX;
     private double GRID_DIMENSION;
@@ -37,13 +49,26 @@ public class ContextCreator implements ContextBuilder<Object> {
     private final Map<Coordinate, List<Microgrid>> microgridMap = new HashMap<>();
     private final TreeMap<Double, List<Coordinate>> keyMap = new TreeMap<>();
 
+
+    /**
+     * Construction et initialisation de la simulation
+     * - Lectures des variables de la simulation
+     * - Construction des grilles
+     * - Chargement des batiments selectionnés
+     * - Création et initialisation de la l'agent responsable de la récupération des données du DWH (Météo)
+     * - Initialisation des producteurs d'énergie
+     * - Création des microgrids
+     *
+     * @param context context
+     *
+     * @return context
+     */
     public Context<Object> build(Context<Object> context) {
         System.out.println("****** Initialisation ******");
         final GeographyParameters<Object> geoParams = new GeographyParameters<>();
         final Geography<Object> geography = GeographyFactoryFinder.createGeographyFactory(null).createGeography("Geography", context, geoParams);
 
-        //System.out.println(RequestsHttp.getData());
-
+        // Début du timer
         long time = System.currentTimeMillis();
 
         // Lecture des paramètres
@@ -54,6 +79,7 @@ public class ContextCreator implements ContextBuilder<Object> {
         // Création des microgrids
         buildMicrogrid(context, geography);
 
+        // Affichage du timer
         System.out.println("Time : " + (System.currentTimeMillis() - time));
 
         return context;
@@ -83,10 +109,9 @@ public class ContextCreator implements ContextBuilder<Object> {
         NB_BUILDING_MAX = params.getInteger("NB_BUILDING_MAX");
         DISTANCE_MAX = params.getDouble("DISTANCE_MAX");
         GRID_DIMENSION = DISTANCE_MAX * 2 * 1000;
-        String BEGIN_DATE = params.getString("BEGIN_DATE");
-        String END_DATE = params.getString("END_DATE");
 
-        Meteo meteo = new Meteo(BEGIN_DATE);
+        // Création agent Meteo
+        Meteo meteo = new Meteo(params.getString("BEGIN_DATE"));
         context.add(meteo);
 
         // Création de la grille
@@ -208,14 +233,14 @@ public class ContextCreator implements ContextBuilder<Object> {
                         }
 
                         // Traitement des batiments selectionnés pour constituer une microgrid ou les laisser à l'écart
-                        if (buildingList.size() < NB_BUILDING_MIN) {
+                        if (buildingList.size() <= NB_BUILDING_MIN) {
                             // On stocke les batiments les plus isolés dans une liste pour les retraiter ensuite
                             losts.addAll(buildingList);
                         } else {
                             // On crée la microgrid avec les batiments selectionnés
                             compteur += buildingList.size();
                             compteurGrid += 1;
-                            Microgrid microgrid = new Microgrid(context, geography, compteurGrid, buildingList, center);
+                            Microgrid microgrid = new Microgrid(context, geography, compteurGrid, buildingList);
                             microgridMap.get(hashForGrid(microgrid.getCentroid())).add(microgrid);
                             context.add(microgrid);
                         }
@@ -238,8 +263,8 @@ public class ContextCreator implements ContextBuilder<Object> {
         Coordinate key = null;
         List<Microgrid> neighborhoodList = new ArrayList<>();
         compteur = 0;
-        for (Building building : losts) {
-            final Coordinate currentKey = hashForGrid(building.getGeometry().getCoordinate());
+        for (Building buildingLost : losts) {
+            final Coordinate currentKey = hashForGrid(buildingLost.getGeometry().getCoordinate());
             if (currentKey != key) {
                 neighborhoodList = loadNeighborhood(currentKey, microgridMap);
                 key = currentKey;
@@ -248,18 +273,18 @@ public class ContextCreator implements ContextBuilder<Object> {
             double dist = Double.MAX_VALUE;
             Microgrid tmp_grid = null;
             for (Microgrid microgrid : neighborhoodList) {
-                double tmp_dist = building.getGeometry().getCoordinate().distance(microgrid.getCentroid());
+                double tmp_dist = buildingLost.getGeometry().getCoordinate().distance(microgrid.getCentroid());
                 if (tmp_dist < dist) {
                     tmp_grid = microgrid;
                     dist = tmp_dist;
                 }
             }
-            if (tmp_grid != null && dist < DISTANCE_MAX) {
+            if (tmp_grid != null && dist < DISTANCE_MAX*1.1) {
                 ++compteur;
-                tmp_grid.addBuilding(building);
+                tmp_grid.addBuilding(buildingLost);
             } else {
-                context.add(building);
-                geography.move(building, building.getGeometry());
+                context.add(buildingLost);
+                geography.move(buildingLost, buildingLost.getGeometry());
             }
         }
         System.out.println(compteur + " batiments récupérés");
