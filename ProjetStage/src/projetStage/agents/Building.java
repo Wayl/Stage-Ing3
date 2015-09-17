@@ -2,11 +2,14 @@ package projetStage.agents;
 
 import com.vividsolutions.jts.geom.Geometry;
 
+import java.util.Map;
+
 public class Building implements Comparable<Building> {
-	private String id;
+    private String id;
 	private String nature;
 	private Geometry geom;
 	private double distance;
+    private Map<String, Double> mapConso;
 
 	public Building(String id, String nature, Geometry geom) {
 		super();
@@ -46,6 +49,14 @@ public class Building implements Comparable<Building> {
 
     public void setDistance(double distance) {
         this.distance = distance;
+    }
+
+    public Double getConso(String date) {
+        return mapConso.get(date);
+    }
+
+    public void setMapConso(Map<String, Double> mapConso) {
+        this.mapConso = mapConso;
     }
 
     @Override

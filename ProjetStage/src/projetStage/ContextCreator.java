@@ -1,8 +1,9 @@
 package projetStage;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import com.vividsolutions.jts.geom.*;
@@ -23,27 +24,31 @@ import repast.simphony.space.gis.GeographyParameters;
 
 /**
  * TODO
- *
- * Intégrer le profil de charge des batiments
- * Calcul de la consommation/production des microgrids en fonction de l'heure et de la météo
+ * <p/>
+ *  => Intégrer le profil de charge des batiments DONE
+ *  => Calcul de la consommation des microgrids en fonction de l'heure DONE (ajouter du random)
+ * Calcul de la production des microgrids en fonction de la météo
  * Avoir en temps réel la production des producteurs
- * Pouvoir allumer, éteindre un producteur DONE
+ *  => Pouvoir allumer, éteindre un producteur DONE
  * récupérer les données
  */
 
 
-
 public class ContextCreator implements ContextBuilder<Object> {
+    private static final SimpleDateFormat universalFullDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
     private final int NB_BUILDING_MIN = 1;
     private int NB_BUILDING_MAX;
     private double DISTANCE_MAX;
     private double GRID_DIMENSION;
+    private Calendar BEGIN_DATE;
 
     // Coordonnées de l'île de la Réunion *1000
     private final double LONG_MIN = 55215;
     private final double LONG_MAX = 55837;
     private final double LAT_MIN = -21389;
     private final double LAT_MAX = -20871;
+
 
     private final Map<Coordinate, List<Building>> buildingMap = new HashMap<>();
     private final Map<Coordinate, List<Microgrid>> microgridMap = new HashMap<>();
@@ -93,6 +98,33 @@ public class ContextCreator implements ContextBuilder<Object> {
         List<String> types = new ArrayList<>();
         List<String> cities = new ArrayList<>();
 
+        // Initialisation des variables globales
+        NB_BUILDING_MAX = params.getInteger("NB_BUILDING_MAX");
+        DISTANCE_MAX = params.getDouble("DISTANCE_MAX");
+        GRID_DIMENSION = DISTANCE_MAX * 2 * 1000;
+
+        // Récupération et initialisation de la date
+        BEGIN_DATE = Calendar.getInstance();
+        try {
+            BEGIN_DATE.setTime(universalFullDateFormat.parse(params.getString("BEGIN_DATE")));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        // Création de l'agent Meteo
+        Meteo meteo = new Meteo(BEGIN_DATE);
+        context.add(meteo);
+
+        // Création de la grille
+        for (double x = LONG_MIN; x < LONG_MAX; x += GRID_DIMENSION) {
+            for (double y = LAT_MIN; y < LAT_MAX; y += GRID_DIMENSION) {
+                Coordinate coord = new Coordinate(x, y);
+                buildingMap.put(coord, new ArrayList<Building>());
+                microgridMap.put(coord, new ArrayList<Microgrid>());
+            }
+        }
+
+        // Lecture des batiments à charger
         if (params.getBoolean("Batiments industriels")) types.add("industriel");
         if (params.getBoolean("Batiments remarquables")) types.add("remarquable");
         if (params.getBoolean("Batiments indifferencies")) types.add("indifferencie");
@@ -105,23 +137,6 @@ public class ContextCreator implements ContextBuilder<Object> {
         if (params.getBoolean("St-Paul")) cities.add("st-Paul");
         if (params.getBoolean("St-Pierre")) cities.add("st-Pierre");
         if (params.getBoolean("St-Joseph")) cities.add("no-mans-land");
-
-        NB_BUILDING_MAX = params.getInteger("NB_BUILDING_MAX");
-        DISTANCE_MAX = params.getDouble("DISTANCE_MAX");
-        GRID_DIMENSION = DISTANCE_MAX * 2 * 1000;
-
-        // Création agent Meteo
-        Meteo meteo = new Meteo(params.getString("BEGIN_DATE"));
-        context.add(meteo);
-
-        // Création de la grille
-        for (double x = LONG_MIN; x < LONG_MAX; x += GRID_DIMENSION) {
-            for (double y = LAT_MIN; y < LAT_MAX; y += GRID_DIMENSION) {
-                Coordinate coord = new Coordinate(x, y);
-                buildingMap.put(coord, new ArrayList<Building>());
-                microgridMap.put(coord, new ArrayList<Microgrid>());
-            }
-        }
 
         // Chargement des batiments
         for (String type : types) {
@@ -151,6 +166,9 @@ public class ContextCreator implements ContextBuilder<Object> {
      * @param filename Nom du fichier a charger
      */
     private void loadFeatures(final String filename) {
+        System.out.println("-> Chargement Profil de consommation");
+        Map<String, Double> mapConso = loadConso();
+
         System.out.println("-> Chargement " + filename);
         try {
             URL url = new File(filename).toURL();
@@ -174,6 +192,7 @@ public class ContextCreator implements ContextBuilder<Object> {
                     if (filename.contains("sport"))
                         building = new SportBuilding(id, nature, geom);
                 }
+                building.setMapConso(mapConso);
                 buildingMap.get(hashForGrid(geom.getCentroid().getCoordinate())).add(building);
             }
 
@@ -182,6 +201,26 @@ public class ContextCreator implements ContextBuilder<Object> {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+
+    private Map<String, Double> loadConso() {
+        Map<String, Double> map = new HashMap<>();
+
+        try {
+            InputStream ips = new FileInputStream("./data/conso/profil.csv");
+            BufferedReader br = new BufferedReader(new InputStreamReader(ips));
+            String ligne;
+            while ((ligne = br.readLine()) != null) {
+                String[] l = ligne.split(";");
+                map.put(l[0], Double.parseDouble(l[1]));
+            }
+            br.close();
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+
+        return map;
     }
 
     /**
@@ -240,7 +279,7 @@ public class ContextCreator implements ContextBuilder<Object> {
                             // On crée la microgrid avec les batiments selectionnés
                             compteur += buildingList.size();
                             compteurGrid += 1;
-                            Microgrid microgrid = new Microgrid(context, geography, compteurGrid, buildingList);
+                            Microgrid microgrid = new Microgrid(context, geography, compteurGrid, BEGIN_DATE, buildingList);
                             microgridMap.get(hashForGrid(microgrid.getCentroid())).add(microgrid);
                             context.add(microgrid);
                         }
@@ -279,7 +318,7 @@ public class ContextCreator implements ContextBuilder<Object> {
                     dist = tmp_dist;
                 }
             }
-            if (tmp_grid != null && dist < DISTANCE_MAX*1.1) {
+            if (tmp_grid != null && dist < DISTANCE_MAX * 1.1) {
                 ++compteur;
                 tmp_grid.addBuilding(buildingLost);
             } else {

@@ -1,6 +1,7 @@
 package projetStage.agents;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import com.vividsolutions.jts.geom.*;
@@ -17,11 +18,15 @@ public class Microgrid {
     private Geography<Object> geography;
     private Mark mark;
     private List<Building> buildingList;    // Liste des batiments contenus dans cette microgrid
-    private Geometry convexHull;    // Plus petit polygone convexe contenant tous les batiments de la microgrid
-    private LineString line;    // Ligne représentant convexHull
-    private Coordinate centroid;    // Barycentre de la microgrid
+    private Geometry convexHull;            // Plus petit polygone convexe contenant tous les batiments de la microgrid
+    private LineString line;                // Ligne représentant la convexHull
+    private Coordinate centroid;            // Barycentre de la microgrid
 
-    private double power;
+    private double conso = 0;
+    private double prod = 0;
+
+    private int hour;
+    private int minute;
 
     /**
      * Constructeur par défaut
@@ -29,15 +34,15 @@ public class Microgrid {
      * @param context   Context
      * @param geography Geography
      */
-    public Microgrid(Context<Object> context, Geography<Object> geography, int id) {
+    public Microgrid(Context<Object> context, Geography<Object> geography, int id, Calendar calendar) {
         this.context = context;
         this.geography = geography;
         this.id = id;
+        hour = calendar.get(Calendar.HOUR);
+        minute = calendar.get(Calendar.MINUTE);
         buildingList = new ArrayList<>();
         convexHull = new Polygon(null, null, new GeometryFactory());
         line = null;
-
-        power = Math.random() * 100;
     }
 
     /**
@@ -48,8 +53,8 @@ public class Microgrid {
      * @param geography   Geography
      * @param featureList Liste des batiment à ajouter à la microgrid
      */
-    public Microgrid(Context<Object> context, Geography<Object> geography, int id, List<Building> featureList) {
-        this(context, geography, id);
+    public Microgrid(Context<Object> context, Geography<Object> geography, int id, Calendar calendar, List<Building> featureList) {
+        this(context, geography, id, calendar);
 
         // Initialisation buildingList, centerList, convexHull
         Geometry centerList = new Polygon(null, null, new GeometryFactory());
@@ -83,9 +88,16 @@ public class Microgrid {
      */
     @ScheduledMethod(start = 1, interval = 1, priority = ScheduleParameters.FIRST_PRIORITY)
     public void step() {
-        power -= 1;
-        if (power < 0)
-            mark.setPowerOn(false);
+        minute += 1;
+        if(minute >= 60) {
+            minute = 0;
+            ++hour;
+            if(hour >= 24)
+                hour = 0;
+        }
+
+        calcConso();
+        calcProd();
     }
 
 
@@ -138,11 +150,43 @@ public class Microgrid {
         this.centroid = centroid;
     }
 
-    public double getPower() {
-        return power;
-    }
-
     public int getId() {
         return id;
+    }
+
+    public double getConso() {
+        return conso;
+    }
+
+    public double getProd() {
+        return prod;
+    }
+
+    public int getHour() {
+        return hour;
+    }
+
+    public int getMinute() {
+        return minute;
+    }
+
+    public void calcConso() {
+        String temps = "";
+        if(hour < 10)
+            temps += "0";
+        temps += hour + ":";
+        if(minute < 10)
+            temps += "0";
+        temps += (minute - minute%5);
+
+        double tmp = 0;
+        for(Building building : buildingList) {
+            tmp += building.getConso(temps);
+        }
+        conso = tmp;
+    }
+
+    public void calcProd() {
+        prod = 0;
     }
 }

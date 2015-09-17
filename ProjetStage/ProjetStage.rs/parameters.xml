@@ -83,7 +83,7 @@
                converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
             />
     <parameter name="BEGIN_DATE" displayName="Date de début de la simulation" type="java.lang.String"
-               defaultValue="2013-01-01 02:05:00"
+               defaultValue="2015-01-09 05:00:00"
                isReadOnly="false"
                converter="repast.simphony.parameter.StringConverterFactory$StringStringConverter"
             />
