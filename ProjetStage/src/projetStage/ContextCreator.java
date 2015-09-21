@@ -25,21 +25,22 @@ import repast.simphony.space.gis.GeographyParameters;
 /**
  * TODO
  * <p/>
- *  => Intégrer le profil de charge des batiments DONE
- *  => Calcul de la consommation des microgrids en fonction de l'heure DONE
- * Calcul de la production des microgrids en fonction de la météo
- * Avoir en temps réel la production des producteurs
- *  => Pouvoir allumer, éteindre un producteur DONE
- *  => récupérer les données DONE
- *
- *
- *  puissance généré par les PV en 2014 : 8.3% => 235.9GWh pour 173.1MW raccordé
+ * => Intégrer le profil de charge des batiments DONE
+ * => Calcul de la consommation des microgrids en fonction de l'heure DONE
+ * Calcul de la production des microgrids en fonction de la météo <=
+ * => Avoir en temps réel la production des producteurs DONE
+ * => Pouvoir allumer, éteindre un producteur DONE
+ * => récupérer les données DONE
+ * <p/>
+ * <p/>
+ * puissance généré par les PV en 2014 : 8.3% => 235.9GWh pour 173.1MW raccordé
  */
 
 
 public class ContextCreator implements ContextBuilder<Object> {
     private static final SimpleDateFormat universalFullDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+    // Paramètres
     private static final int NB_BUILDING_MIN = 1;
     private static int NB_BUILDING_MAX;
     private static double DISTANCE_MAX;
@@ -51,7 +52,6 @@ public class ContextCreator implements ContextBuilder<Object> {
     private static final double LONG_MAX = 55837;
     private static final double LAT_MIN = -21389;
     private static final double LAT_MAX = -20871;
-
 
     private final Map<Coordinate, List<Building>> buildingMap = new HashMap<>();
     private final Map<Coordinate, List<Microgrid>> microgridMap = new HashMap<>();
@@ -94,6 +94,9 @@ public class ContextCreator implements ContextBuilder<Object> {
 
     /**
      * Lecture des parametres et chargement des batiments
+     *
+     * @param context context
+     * @param geography geography
      */
     public void readParameters(Context<Object> context, Geography<Object> geography) {
         Parameters params = RunEnvironment.getInstance().getParameters();
@@ -135,6 +138,9 @@ public class ContextCreator implements ContextBuilder<Object> {
         Meteo meteo = new Meteo(BEGIN_DATE);
         context.add(meteo);
 
+        // Chargement du profil de consommation
+        Map<String, Double> mapConso = loadConso();
+
         // Lecture des batiments à charger
         if (params.getBoolean("Batiments industriels")) types.add("industriel");
         if (params.getBoolean("Batiments remarquables")) types.add("remarquable");
@@ -152,15 +158,13 @@ public class ContextCreator implements ContextBuilder<Object> {
         // Chargement des batiments
         for (String type : types) {
             for (String ville : cities) {
-                loadFeatures("./data/buildings/" + ville + "/" + type + "/building-" + type + "-" + ville + ".shp");
+                loadFeatures("./data/buildings/" + ville + "/" + type + "/building-" + type + "-" + ville + ".shp", mapConso);
             }
         }
 
         // Récupération des cases de la grille non vide et triage en fonction de leur distance au centre de la carte
         Coordinate center = new Coordinate((LONG_MAX + LONG_MIN) / 2, (LAT_MAX + LAT_MIN) / 2);
-        Iterator<Map.Entry<Coordinate, List<Building>>> ite = buildingMap.entrySet().iterator();
-        while (ite.hasNext()) {
-            Map.Entry<Coordinate, List<Building>> entry = ite.next();
+        for (Map.Entry<Coordinate, List<Building>> entry : buildingMap.entrySet()) {
             if (entry.getValue().size() > 0) {
                 double dist = -entry.getKey().distance(center);
                 if (!keyMap.containsKey(dist)) {
@@ -175,11 +179,9 @@ public class ContextCreator implements ContextBuilder<Object> {
      * Chargement des fichier shapefile
      *
      * @param filename Nom du fichier a charger
+     * @param mapConso Profil de consommation des batiments
      */
-    private void loadFeatures(final String filename) {
-        System.out.println("-> Chargement Profil de consommation");
-        Map<String, Double> mapConso = loadConso();
-
+    private void loadFeatures(final String filename, final Map<String, Double> mapConso) {
         System.out.println("-> Chargement " + filename);
         try {
             URL url = new File(filename).toURL();
@@ -214,7 +216,11 @@ public class ContextCreator implements ContextBuilder<Object> {
         }
     }
 
-
+    /**
+     * Chargement du profil de consommation des batiments
+     *
+     * @return une map contenant la consommation électrique d'un batiment pour chaque minutes
+     */
     private Map<String, Double> loadConso() {
         Map<String, Double> map = new HashMap<>();
 
@@ -385,7 +391,7 @@ public class ContextCreator implements ContextBuilder<Object> {
     /**
      * Retourne les coordonnees du coin superieur gauche de la case dans laquelle se trouve 'coord'
      *
-     * @param coord Coordonnees d'un batiment
+     * @param coord Coordonnees d'un batiment/microgrid/...
      *
      * @return les coordonnees du coin superieur gauche de la case dans laquelle se trouve 'coord'
      */

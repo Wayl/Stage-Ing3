@@ -33,9 +33,9 @@ public class Producer {
 
 
     /**
-     * STEP
-     * <p/>
      * Méthode effectuée à chaque step
+     * <p/>
+     * Réitialisation de la production
      */
     @ScheduledMethod(start = 0, interval = 1, priority = 2)
     public void step() {
@@ -44,9 +44,11 @@ public class Producer {
 
 
     /**
+     * Demande d'allocation d'une quantité d'energie
+     *
      * @param energy energie demandée
      *
-     * @return l'énergie allouée (0 => reacteur au maximum de sa capacité)
+     * @return l'énergie allouée (return 0 <=> reacteur au maximum de sa capacité, ne peut pas allouer de l'energie)
      */
     public double allocate(double energy) {
         double available = getPowerAvailable();
@@ -69,7 +71,7 @@ public class Producer {
     }
 
     public double getPowerMax() {
-        if(isActive())
+        if (isActive())
             return powerMax;
         else
             return 0;

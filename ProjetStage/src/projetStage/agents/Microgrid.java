@@ -33,6 +33,8 @@ public class Microgrid {
      *
      * @param context   Context
      * @param geography Geography
+     * @param id        Id de la microgrid
+     * @param calendar  Date de début de la simulation
      */
     public Microgrid(Context<Object> context, Geography<Object> geography, EnergyManager energyManager, int id, Calendar calendar) {
         this.context = context;
@@ -50,9 +52,12 @@ public class Microgrid {
      * Constructeur paramétré, création du plus petit polygone convexe contenant tous les batiments
      * contenus dans featureList
      *
-     * @param context     Context
-     * @param geography   Geography
-     * @param featureList Liste des batiment à ajouter à la microgrid
+     * @param context       Context
+     * @param geography     Geography
+     * @param energyManager EnergyManager
+     * @param id            Id de la microgrid
+     * @param calendar      Date de début de la simulation
+     * @param featureList   Liste des batiment à ajouter à la microgrid
      */
     public Microgrid(Context<Object> context, Geography<Object> geography, EnergyManager energyManager, int id, Calendar calendar, List<Building> featureList) {
         this(context, geography, energyManager, id, calendar);
@@ -84,16 +89,15 @@ public class Microgrid {
 
     /**
      * STEP
-     *
      * Méthode effectuée à chaque step
      */
     @ScheduledMethod(start = 0, interval = 1, priority = 1)
     public void step() {
         minute += 1;
-        if(minute >= 60) {
+        if (minute >= 60) {
             minute = 0;
             ++hour;
-            if(hour >= 24)
+            if (hour >= 24)
                 hour = 0;
         }
 
@@ -169,20 +173,20 @@ public class Microgrid {
 
     public void calcConso() {
         String temps = "";
-        if(hour < 10)
+        if (hour < 10)
             temps += "0";
         temps += hour + ":";
-        if(minute < 10)
+        if (minute < 10)
             temps += "0";
-        temps += (minute - minute%5);
+        temps += (minute - minute % 5);
 
         double tmp = 0;
-        for(Building building : buildingList) {
+        for (Building building : buildingList) {
             tmp += building.getConso(temps);
         }
         conso = tmp - energyManager.allocateEnergy(tmp, centroid);
 
-        if(conso < tmp)
+        if (conso < tmp)
             mark.setPowerOn(false);
         else
             mark.setPowerOn(true);

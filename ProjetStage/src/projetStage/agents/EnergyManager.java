@@ -18,9 +18,8 @@ import java.util.*;
 public class EnergyManager {
     private static Map<String, Producer> mapProducer;
     private Map<Coordinate, List<String>> mapSortedProducer;
-    private double globalProd;
-    private double globalConso;
 
+    private int nbGridDown;
 
     /**
      * Constructeur par défaut
@@ -33,14 +32,11 @@ public class EnergyManager {
 
 
     /**
-     * STEP
-     * <p/>
      * Méthode effectuée à chaque step
      */
     @ScheduledMethod(start = 0, interval = 1, priority = 3)
     public void step() {
-        globalProd = 0;
-        globalConso = 0;
+        nbGridDown = 0;
     }
 
 
@@ -64,6 +60,8 @@ public class EnergyManager {
             if(energyTmp <= 0)
                 return 0;
         }
+
+        if(energyTmp > 0) ++nbGridDown;
 
         return energyTmp;
     }
@@ -132,5 +130,10 @@ public class EnergyManager {
                 mapSortedProducer.get(coord).add(map.get(dist));
             }
         }
+    }
+
+
+    public int getNbGridDown() {
+        return nbGridDown;
     }
 }
