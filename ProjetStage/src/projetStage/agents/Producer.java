@@ -1,13 +1,7 @@
 package projetStage.agents;
 
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
-import repast.simphony.context.Context;
-import repast.simphony.space.gis.Geography;
-
-import java.io.*;
+import repast.simphony.engine.schedule.ScheduledMethod;
 
 /**
  * Created by wayl on 19/08/15 !
@@ -18,57 +12,53 @@ public class Producer {
     private double powerMax;
     private double powerUsed;
     private boolean active;
+    private Coordinate coord;
 
 
     /**
      * Constructeur par défaut
      *
-     * @param name Nom du producteur
-     * @param type Type d'énergie utilisée
+     * @param name     Nom du producteur
+     * @param type     Type d'énergie utilisée
      * @param powerMax Puissance maximale du producteur en MW
      */
-    public Producer(String name, String type, double powerMax) {
+    public Producer(String name, String type, double powerMax, Coordinate coord) {
         this.name = name;
         this.type = type;
-        this.powerMax = powerMax;
+        this.powerMax = powerMax * 1000000;
         this.powerUsed = 0;
         this.active = true;
+        this.coord = coord;
     }
+
 
     /**
-     * Création des producteurs d'électricité
-     *
-     * @param context   context
-     * @param geography geography
+     * STEP
+     * <p/>
+     * Méthode effectuée à chaque step
      */
-    public static void createProducers(final Context<Object> context, final Geography<Object> geography) {
-        String filename = "./data/producers/producers.csv";
-        System.out.println("-> Chargement Producteurs : " + filename);
-        try {
-            File file = new File(filename);
-            InputStream ips = new FileInputStream(file);
-            InputStreamReader ipsr = new InputStreamReader(ips);
-            BufferedReader br = new BufferedReader(ipsr);
-            String ligne;
-            while ((ligne = br.readLine()) != null) {
-                String[] params = ligne.split(",");
-                String name = params[0];
-                String type = params[1];
-                String x = params[2];
-                String y = params[3];
-                String power = params[4];
-                Producer prod = new Producer(name, type, Double.parseDouble(power));
+    @ScheduledMethod(start = 0, interval = 1, priority = 2)
+    public void step() {
+        powerUsed = 0;
+    }
 
-                context.add(prod);
-                Coordinate[] coordinates = new Coordinate[1];
-                coordinates[0] = new Coordinate(Double.parseDouble(x + 2), Double.parseDouble(y + 2));
-                geography.move(prod, new Point(new CoordinateArraySequence(coordinates), new GeometryFactory()));
-            }
-            br.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+
+    /**
+     * @param energy energie demandée
+     *
+     * @return l'énergie allouée (0 => reacteur au maximum de sa capacité)
+     */
+    public double allocate(double energy) {
+        double available = getPowerAvailable();
+        if (available >= energy) {
+            setPowerUsed(powerUsed + energy);
+            return energy;
+        } else {
+            setPowerUsed(powerUsed + available);
+            return available;
         }
     }
+
 
     public String getName() {
         return name;
@@ -79,7 +69,10 @@ public class Producer {
     }
 
     public double getPowerMax() {
-        return powerMax;
+        if(isActive())
+            return powerMax;
+        else
+            return 0;
     }
 
     public double getPowerUsed() {
@@ -87,12 +80,16 @@ public class Producer {
     }
 
     public void setPowerUsed(double powerUsed) {
-        if(powerUsed > powerMax)
+        if (powerUsed > powerMax)
             this.powerUsed = powerMax;
         else if (powerUsed < 0)
             this.powerUsed = 0;
         else
             this.powerUsed = powerUsed;
+    }
+
+    public double getPowerAvailable() {
+        return powerMax - powerUsed;
     }
 
     public boolean isActive() {
@@ -101,5 +98,9 @@ public class Producer {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public Coordinate getCoord() {
+        return coord;
     }
 }

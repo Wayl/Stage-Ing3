@@ -8,11 +8,11 @@ import com.vividsolutions.jts.geom.*;
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
 
 import repast.simphony.context.Context;
-import repast.simphony.engine.schedule.ScheduleParameters;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.space.gis.Geography;
 
 public class Microgrid {
+    EnergyManager energyManager;
     private int id;
     private Context<Object> context;
     private Geography<Object> geography;
@@ -34,9 +34,10 @@ public class Microgrid {
      * @param context   Context
      * @param geography Geography
      */
-    public Microgrid(Context<Object> context, Geography<Object> geography, int id, Calendar calendar) {
+    public Microgrid(Context<Object> context, Geography<Object> geography, EnergyManager energyManager, int id, Calendar calendar) {
         this.context = context;
         this.geography = geography;
+        this.energyManager = energyManager;
         this.id = id;
         hour = calendar.get(Calendar.HOUR);
         minute = calendar.get(Calendar.MINUTE);
@@ -53,8 +54,8 @@ public class Microgrid {
      * @param geography   Geography
      * @param featureList Liste des batiment à ajouter à la microgrid
      */
-    public Microgrid(Context<Object> context, Geography<Object> geography, int id, Calendar calendar, List<Building> featureList) {
-        this(context, geography, id, calendar);
+    public Microgrid(Context<Object> context, Geography<Object> geography, EnergyManager energyManager, int id, Calendar calendar, List<Building> featureList) {
+        this(context, geography, energyManager, id, calendar);
 
         // Initialisation buildingList, centerList, convexHull
         Geometry centerList = new Polygon(null, null, new GeometryFactory());
@@ -86,7 +87,7 @@ public class Microgrid {
      *
      * Méthode effectuée à chaque step
      */
-    @ScheduledMethod(start = 1, interval = 1, priority = ScheduleParameters.FIRST_PRIORITY)
+    @ScheduledMethod(start = 0, interval = 1, priority = 1)
     public void step() {
         minute += 1;
         if(minute >= 60) {
@@ -150,10 +151,6 @@ public class Microgrid {
         this.centroid = centroid;
     }
 
-    public int getId() {
-        return id;
-    }
-
     public double getConso() {
         return conso;
     }
@@ -183,7 +180,13 @@ public class Microgrid {
         for(Building building : buildingList) {
             tmp += building.getConso(temps);
         }
-        conso = tmp;
+        conso = tmp - energyManager.allocateEnergy(tmp, centroid);
+
+        if(conso < tmp)
+            mark.setPowerOn(false);
+        else
+            mark.setPowerOn(true);
+
     }
 
     public void calcProd() {

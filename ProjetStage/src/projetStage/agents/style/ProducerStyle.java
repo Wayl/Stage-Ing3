@@ -29,7 +29,7 @@ public class ProducerStyle implements MarkStyle<Producer> {
             powerUsed = producer.getPowerUsed();
             double frac = 255 * (producer.getPowerUsed() / producer.getPowerMax());
             Color color = new Color((int)Math.floor(frac), 255 - (int)Math.floor(frac), 0);
-            int dim = (int)(producer.getPowerMax() / 20) + 5;
+            int dim = (int)(producer.getPowerMax() / 20000000) + 5;
             image = PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, new Dimension(dim, dim), 1, color);
             return new BasicWWTexture(image);
         }

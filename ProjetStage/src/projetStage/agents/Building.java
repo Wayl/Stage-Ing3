@@ -52,7 +52,8 @@ public class Building implements Comparable<Building> {
     }
 
     public Double getConso(String date) {
-        return mapConso.get(date);
+        Double random = Math.random()*0.3 + 0.85;
+        return mapConso.get(date)*random * 25;
     }
 
     public void setMapConso(Map<String, Double> mapConso) {

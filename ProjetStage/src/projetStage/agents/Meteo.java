@@ -32,10 +32,10 @@ public class Meteo {
      * @param BEGIN_DATE Date de départ de la simulation
      */
     public Meteo(Calendar BEGIN_DATE) {
-        universalFullDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+        universalFullDateFormat.setTimeZone(TimeZone.getTimeZone("GMT+04"));
         date.setTime(BEGIN_DATE.getTime());
         endDate.setTime(BEGIN_DATE.getTime());
-        System.out.println(BEGIN_DATE + ", " + universalFullDateFormat.format(date.getTime()));
+        System.out.println("BEGIN_DATE : " + universalFullDateFormat.format(date.getTime()));
         loadNextSolarData();
     }
 
@@ -82,7 +82,6 @@ public class Meteo {
             BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
             String line = rd.readLine(); // We don't read the header
             while ((line = rd.readLine()) != null) {
-                System.out.println(line);
                 String[] split = line.split(",");
                 dataMeteo.put(split[0], Double.parseDouble(split[1]));
             }

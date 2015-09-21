@@ -26,34 +26,38 @@ import repast.simphony.space.gis.GeographyParameters;
  * TODO
  * <p/>
  *  => Intégrer le profil de charge des batiments DONE
- *  => Calcul de la consommation des microgrids en fonction de l'heure DONE (ajouter du random)
+ *  => Calcul de la consommation des microgrids en fonction de l'heure DONE
  * Calcul de la production des microgrids en fonction de la météo
  * Avoir en temps réel la production des producteurs
  *  => Pouvoir allumer, éteindre un producteur DONE
- * récupérer les données
+ *  => récupérer les données DONE
+ *
+ *
+ *  puissance généré par les PV en 2014 : 8.3% => 235.9GWh pour 173.1MW raccordé
  */
 
 
 public class ContextCreator implements ContextBuilder<Object> {
     private static final SimpleDateFormat universalFullDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    private final int NB_BUILDING_MIN = 1;
-    private int NB_BUILDING_MAX;
-    private double DISTANCE_MAX;
-    private double GRID_DIMENSION;
+    private static final int NB_BUILDING_MIN = 1;
+    private static int NB_BUILDING_MAX;
+    private static double DISTANCE_MAX;
+    private static double GRID_DIMENSION;
     private Calendar BEGIN_DATE;
 
     // Coordonnées de l'île de la Réunion *1000
-    private final double LONG_MIN = 55215;
-    private final double LONG_MAX = 55837;
-    private final double LAT_MIN = -21389;
-    private final double LAT_MAX = -20871;
+    private static final double LONG_MIN = 55215;
+    private static final double LONG_MAX = 55837;
+    private static final double LAT_MIN = -21389;
+    private static final double LAT_MAX = -20871;
 
 
     private final Map<Coordinate, List<Building>> buildingMap = new HashMap<>();
     private final Map<Coordinate, List<Microgrid>> microgridMap = new HashMap<>();
     private final TreeMap<Double, List<Coordinate>> keyMap = new TreeMap<>();
 
+    private EnergyManager energyManager;
 
     /**
      * Construction et initialisation de la simulation
@@ -76,10 +80,8 @@ public class ContextCreator implements ContextBuilder<Object> {
         // Début du timer
         long time = System.currentTimeMillis();
 
-        // Lecture des paramètres
-        readParameters(context);
-        // Création des producteurs d'énergie
-        Producer.createProducers(context, geography);
+        // Lecture des paramètres, création de Meteo, Stat
+        readParameters(context, geography);
 
         // Création des microgrids
         buildMicrogrid(context, geography);
@@ -93,7 +95,7 @@ public class ContextCreator implements ContextBuilder<Object> {
     /**
      * Lecture des parametres et chargement des batiments
      */
-    public void readParameters(Context<Object> context) {
+    public void readParameters(Context<Object> context, Geography<Object> geography) {
         Parameters params = RunEnvironment.getInstance().getParameters();
         List<String> types = new ArrayList<>();
         List<String> cities = new ArrayList<>();
@@ -102,6 +104,24 @@ public class ContextCreator implements ContextBuilder<Object> {
         NB_BUILDING_MAX = params.getInteger("NB_BUILDING_MAX");
         DISTANCE_MAX = params.getDouble("DISTANCE_MAX");
         GRID_DIMENSION = DISTANCE_MAX * 2 * 1000;
+
+        // Création des grilles
+        Map<Coordinate, List<String>> producerMap = new HashMap<>();
+        for (double x = LONG_MIN; x < LONG_MAX; x += GRID_DIMENSION) {
+            for (double y = LAT_MIN; y < LAT_MAX; y += GRID_DIMENSION) {
+                Coordinate coord = new Coordinate(x, y);
+                buildingMap.put(coord, new ArrayList<Building>());
+                microgridMap.put(coord, new ArrayList<Microgrid>());
+                producerMap.put(coord, new ArrayList<String>());
+            }
+        }
+
+
+        // Création de l'agent EnergyManager et des producteurs d'énergie
+        energyManager = new EnergyManager(producerMap);
+        energyManager.createProducers(context, geography);
+        energyManager.initProducerMap();
+        context.add(energyManager);
 
         // Récupération et initialisation de la date
         BEGIN_DATE = Calendar.getInstance();
@@ -114,15 +134,6 @@ public class ContextCreator implements ContextBuilder<Object> {
         // Création de l'agent Meteo
         Meteo meteo = new Meteo(BEGIN_DATE);
         context.add(meteo);
-
-        // Création de la grille
-        for (double x = LONG_MIN; x < LONG_MAX; x += GRID_DIMENSION) {
-            for (double y = LAT_MIN; y < LAT_MAX; y += GRID_DIMENSION) {
-                Coordinate coord = new Coordinate(x, y);
-                buildingMap.put(coord, new ArrayList<Building>());
-                microgridMap.put(coord, new ArrayList<Microgrid>());
-            }
-        }
 
         // Lecture des batiments à charger
         if (params.getBoolean("Batiments industriels")) types.add("industriel");
@@ -279,7 +290,7 @@ public class ContextCreator implements ContextBuilder<Object> {
                             // On crée la microgrid avec les batiments selectionnés
                             compteur += buildingList.size();
                             compteurGrid += 1;
-                            Microgrid microgrid = new Microgrid(context, geography, compteurGrid, BEGIN_DATE, buildingList);
+                            Microgrid microgrid = new Microgrid(context, geography, energyManager, compteurGrid, BEGIN_DATE, buildingList);
                             microgridMap.get(hashForGrid(microgrid.getCentroid())).add(microgrid);
                             context.add(microgrid);
                         }
@@ -378,7 +389,7 @@ public class ContextCreator implements ContextBuilder<Object> {
      *
      * @return les coordonnees du coin superieur gauche de la case dans laquelle se trouve 'coord'
      */
-    public Coordinate hashForGrid(Coordinate coord) {
+    public static Coordinate hashForGrid(Coordinate coord) {
         double x = LONG_MIN;
         double y = LAT_MIN;
 
