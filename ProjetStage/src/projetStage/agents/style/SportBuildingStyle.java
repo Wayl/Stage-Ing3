@@ -5,7 +5,7 @@ import gov.nasa.worldwind.render.SurfaceShape;
 
 import java.awt.Color;
 
-import projetStage.agents.SportBuilding;
+import projetStage.agents.building.SportBuilding;
 
 import repast.simphony.visualization.gis3D.style.SurfaceShapeStyle;
 

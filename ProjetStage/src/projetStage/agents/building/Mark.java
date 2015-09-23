@@ -1,4 +1,4 @@
-package projetStage.agents;
+package projetStage.agents.building;
 
 /**
  * Affiche les nombre de batiments et une icone indiquant si la microgride est alimentée en électricité

@@ -5,7 +5,7 @@ import gov.nasa.worldwind.render.SurfaceShape;
 
 import java.awt.Color;
 
-import projetStage.agents.NoticeableBuilding;
+import projetStage.agents.building.NoticeableBuilding;
 
 import repast.simphony.visualization.gis3D.style.SurfaceShapeStyle;
 

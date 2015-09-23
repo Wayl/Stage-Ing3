@@ -3,7 +3,7 @@ package projetStage.agents.style;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.render.*;
-import projetStage.agents.Producer;
+import projetStage.agents.controller.Producer;
 import repast.simphony.visualization.gis3D.PlaceMark;
 import repast.simphony.visualization.gis3D.style.MarkStyle;
 

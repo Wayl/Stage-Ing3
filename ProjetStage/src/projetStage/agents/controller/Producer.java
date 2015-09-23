@@ -1,4 +1,4 @@
-package projetStage.agents;
+package projetStage.agents.controller;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import repast.simphony.engine.schedule.ScheduledMethod;

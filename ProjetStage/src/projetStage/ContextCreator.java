@@ -11,8 +11,6 @@ import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.opengis.feature.simple.SimpleFeature;
 
-import projetStage.agents.*;
-
 import repast.simphony.context.Context;
 import repast.simphony.context.space.gis.GeographyFactoryFinder;
 import repast.simphony.dataLoader.ContextBuilder;
@@ -21,6 +19,10 @@ import repast.simphony.parameter.Parameters;
 import repast.simphony.space.gis.Geography;
 import repast.simphony.space.gis.GeographyParameters;
 
+import projetStage.agents.building.*;
+import projetStage.agents.controller.EnergyManager;
+import projetStage.agents.controller.Meteo;
+import projetStage.agents.controller.Microgrid;
 
 /**
  * TODO

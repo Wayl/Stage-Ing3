@@ -1,4 +1,4 @@
-package projetStage.agents;
+package projetStage.agents.controller;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;

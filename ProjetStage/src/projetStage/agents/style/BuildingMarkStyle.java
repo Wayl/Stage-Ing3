@@ -3,7 +3,7 @@ package projetStage.agents.style;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.render.*;
-import projetStage.agents.Mark;
+import projetStage.agents.building.Mark;
 import repast.simphony.visualization.gis3D.PlaceMark;
 import repast.simphony.visualization.gis3D.style.MarkStyle;
 
@@ -13,7 +13,7 @@ import java.net.URL;
 /**
  * Created by wayl on 15/07/15 !
  */
-public class StyleMark implements MarkStyle<Mark> {
+public class BuildingMarkStyle implements MarkStyle<Mark> {
     private final Offset labelOffset;
     private final Offset iconOffset;
     private final BasicWWTexture iconEclair;
@@ -22,7 +22,7 @@ public class StyleMark implements MarkStyle<Mark> {
     /**
      * Constructeur par défaut
      */
-    public StyleMark() {
+    public BuildingMarkStyle() {
         // Initialisation offset
         labelOffset = new Offset(-0.7d, -0.7d, AVKey.FRACTION, AVKey.FRACTION);
         iconOffset = new Offset(20.0, 20.0, AVKey.PIXELS, AVKey.PIXELS);

@@ -7,7 +7,7 @@ import java.awt.Color;
 
 import repast.simphony.visualization.gis3D.style.SurfaceShapeStyle;
 
-import projetStage.agents.Microgrid;
+import projetStage.agents.controller.Microgrid;
 
 public class MicrogridStyle implements SurfaceShapeStyle<Microgrid>{
 

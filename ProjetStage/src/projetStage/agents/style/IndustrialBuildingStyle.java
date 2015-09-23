@@ -1,6 +1,6 @@
 package projetStage.agents.style;
 
-import projetStage.agents.IndustrialBuilding;
+import projetStage.agents.building.IndustrialBuilding;
 
 import gov.nasa.worldwind.render.SurfacePolygon;
 import gov.nasa.worldwind.render.SurfaceShape;
