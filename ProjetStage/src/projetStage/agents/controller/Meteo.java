@@ -19,7 +19,7 @@ import java.util.*;
 public class Meteo {
     private static final String URL_GETFROMCASSANDRA = "http://10.10.6.169:8080/rest/getSensorData";
     private static final SimpleDateFormat universalFullDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    private static final int INTERVAL = 20;
+    private static final int INTERVAL = 20; // Indique à quel interval de temps (en minutes) on doit récupérer les données depuis Cassandra
 
     private Calendar date = Calendar.getInstance();
     private Calendar endDate = Calendar.getInstance();
