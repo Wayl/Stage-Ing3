@@ -5,11 +5,11 @@ package projetStage.agents.building;
  *
  * Created by wayl on 15/07/15 !
  */
-public class Mark {
+public class MicrogridMark {
     private int nbBuilding;
     private boolean powerOn = true;
 
-    public Mark(int nbBuilding) {
+    public MicrogridMark(int nbBuilding) {
         this.nbBuilding = nbBuilding;
     }
 

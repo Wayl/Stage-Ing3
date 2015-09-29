@@ -1,4 +1,4 @@
-package projetStage.agents.controller;
+package projetStage.agents.building;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -8,7 +8,8 @@ import com.vividsolutions.jts.geom.*;
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
 
 import projetStage.agents.building.Building;
-import projetStage.agents.building.Mark;
+import projetStage.agents.building.MicrogridMark;
+import projetStage.agents.controller.EnergyManager;
 import repast.simphony.context.Context;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.space.gis.Geography;
@@ -18,7 +19,7 @@ public class Microgrid {
     private int id;
     private Context<Object> context;
     private Geography<Object> geography;
-    private Mark mark;
+    private MicrogridMark microgridMark;
     private List<Building> buildingList;    // Liste des batiments contenus dans cette microgrid
     private Geometry convexHull;            // Plus petit polygone convexe contenant tous les batiments de la microgrid
     private LineString line;                // Ligne représentant la convexHull
@@ -78,11 +79,11 @@ public class Microgrid {
         convexHull = centerList.convexHull();
 
         // Création de la marque
-        mark = new Mark(featureList.size());
-        context.add(mark);
+        microgridMark = new MicrogridMark(featureList.size());
+        context.add(microgridMark);
         Coordinate[] coordinates = new Coordinate[1];
         coordinates[0] = getCentroid();
-        geography.move(mark, new Point(new CoordinateArraySequence(coordinates), new GeometryFactory()));
+        geography.move(microgridMark, new Point(new CoordinateArraySequence(coordinates), new GeometryFactory()));
 
         // Construction du polygon représentant la microgrid
         buildMicrogrid();
@@ -145,7 +146,7 @@ public class Microgrid {
      * Mise à jour de la marque affichant le nombre de batiments
      */
     public void updateNbBuilding() {
-        mark.setNbBuilding(buildingList.size());
+        microgridMark.setNbBuilding(buildingList.size());
     }
 
 
@@ -189,9 +190,9 @@ public class Microgrid {
         conso = tmp - energyManager.allocateEnergy(tmp, centroid);
 
         if (conso < tmp)
-            mark.setPowerOn(false);
+            microgridMark.setPowerOn(false);
         else
-            mark.setPowerOn(true);
+            microgridMark.setPowerOn(true);
 
     }
 

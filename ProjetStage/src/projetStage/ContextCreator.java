@@ -22,7 +22,7 @@ import repast.simphony.space.gis.GeographyParameters;
 import projetStage.agents.building.*;
 import projetStage.agents.controller.EnergyManager;
 import projetStage.agents.controller.Meteo;
-import projetStage.agents.controller.Microgrid;
+import projetStage.agents.building.Microgrid;
 
 /**
  * TODO

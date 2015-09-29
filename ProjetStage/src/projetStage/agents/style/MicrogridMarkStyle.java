@@ -3,7 +3,7 @@ package projetStage.agents.style;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.render.*;
-import projetStage.agents.building.Mark;
+import projetStage.agents.building.MicrogridMark;
 import repast.simphony.visualization.gis3D.PlaceMark;
 import repast.simphony.visualization.gis3D.style.MarkStyle;
 
@@ -13,7 +13,7 @@ import java.net.URL;
 /**
  * Created by wayl on 15/07/15 !
  */
-public class BuildingMarkStyle implements MarkStyle<Mark> {
+public class MicrogridMarkStyle implements MarkStyle<MicrogridMark> {
     private final Offset labelOffset;
     private final Offset iconOffset;
     private final BasicWWTexture iconEclair;
@@ -22,7 +22,7 @@ public class BuildingMarkStyle implements MarkStyle<Mark> {
     /**
      * Constructeur par défaut
      */
-    public BuildingMarkStyle() {
+    public MicrogridMarkStyle() {
         // Initialisation offset
         labelOffset = new Offset(-0.7d, -0.7d, AVKey.FRACTION, AVKey.FRACTION);
         iconOffset = new Offset(20.0, 20.0, AVKey.PIXELS, AVKey.PIXELS);
@@ -44,8 +44,8 @@ public class BuildingMarkStyle implements MarkStyle<Mark> {
 
 
     @Override
-    public WWTexture getTexture(Mark mark, WWTexture texture) {
-        if (mark.isPowerOn())
+    public WWTexture getTexture(MicrogridMark microgridMark, WWTexture texture) {
+        if (microgridMark.isPowerOn())
             return iconEclair;
         else
             return iconEclairRouge;
@@ -53,7 +53,7 @@ public class BuildingMarkStyle implements MarkStyle<Mark> {
     }
 
     @Override
-    public PlaceMark getPlaceMark(Mark mark, PlaceMark placeMark) {
+    public PlaceMark getPlaceMark(MicrogridMark microgridMark, PlaceMark placeMark) {
         if(placeMark == null) {
             PlaceMark place = new PlaceMark();
             place.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
@@ -64,18 +64,18 @@ public class BuildingMarkStyle implements MarkStyle<Mark> {
     }
 
     @Override
-    public Offset getIconOffset(Mark mark) {
+    public Offset getIconOffset(MicrogridMark microgridMark) {
         return iconOffset;
     }
 
     @Override
-    public double getElevation(Mark mark) {
+    public double getElevation(MicrogridMark microgridMark) {
         return 50;
     }
 
     @Override
-    public double getScale(Mark mark) {
-        if (mark.isPowerOn()) {
+    public double getScale(MicrogridMark microgridMark) {
+        if (microgridMark.isPowerOn()) {
             return 0.2;
         } else {
             return 0.3;
@@ -83,18 +83,18 @@ public class BuildingMarkStyle implements MarkStyle<Mark> {
     }
 
     @Override
-    public double getHeading(Mark mark) {
+    public double getHeading(MicrogridMark microgridMark) {
         return 0;
     }
 
     @Override
-    public String getLabel(Mark mark) {
-        return Integer.toString(mark.getNbBuilding());
+    public String getLabel(MicrogridMark microgridMark) {
+        return Integer.toString(microgridMark.getNbBuilding());
     }
 
     @Override
-    public Color getLabelColor(Mark mark) {
-        if (mark.isPowerOn()) {
+    public Color getLabelColor(MicrogridMark microgridMark) {
+        if (microgridMark.isPowerOn()) {
             return Color.BLACK;
         } else {
             return Color.RED;
@@ -102,18 +102,18 @@ public class BuildingMarkStyle implements MarkStyle<Mark> {
     }
 
     @Override
-    public Font getLabelFont(Mark mark) {
+    public Font getLabelFont(MicrogridMark microgridMark) {
         return null;
     }
 
     @Override
-    public Offset getLabelOffset(Mark mark) {
+    public Offset getLabelOffset(MicrogridMark microgridMark) {
         return labelOffset;
     }
 
     @Override
-    public double getLineWidth(Mark mark) {
-        if (mark.isPowerOn()) {
+    public double getLineWidth(MicrogridMark microgridMark) {
+        if (microgridMark.isPowerOn()) {
             return 0.7;
         } else {
             return 1;
@@ -121,7 +121,7 @@ public class BuildingMarkStyle implements MarkStyle<Mark> {
     }
 
     @Override
-    public Material getLineMaterial(Mark mark, Material lineMaterial) {
+    public Material getLineMaterial(MicrogridMark microgridMark, Material lineMaterial) {
         if (lineMaterial == null) {
             lineMaterial = new Material(Color.BLACK);
         }
