@@ -16,7 +16,6 @@ import repast.simphony.space.gis.Geography;
 
 public class Microgrid {
     EnergyManager energyManager;
-    private int id;
     private Context<Object> context;
     private Geography<Object> geography;
     private MicrogridMark microgridMark;
@@ -36,14 +35,13 @@ public class Microgrid {
      *
      * @param context   Context
      * @param geography Geography
-     * @param id        Id de la microgrid
+     * @param energyManager EnergyManager
      * @param calendar  Date de début de la simulation
      */
-    public Microgrid(Context<Object> context, Geography<Object> geography, EnergyManager energyManager, int id, Calendar calendar) {
+    public Microgrid(Context<Object> context, Geography<Object> geography, EnergyManager energyManager, Calendar calendar) {
         this.context = context;
         this.geography = geography;
         this.energyManager = energyManager;
-        this.id = id;
         hour = calendar.get(Calendar.HOUR);
         minute = calendar.get(Calendar.MINUTE);
         buildingList = new ArrayList<>();
@@ -58,12 +56,11 @@ public class Microgrid {
      * @param context       Context
      * @param geography     Geography
      * @param energyManager EnergyManager
-     * @param id            Id de la microgrid
      * @param calendar      Date de début de la simulation
      * @param featureList   Liste des batiment à ajouter à la microgrid
      */
-    public Microgrid(Context<Object> context, Geography<Object> geography, EnergyManager energyManager, int id, Calendar calendar, List<Building> featureList) {
-        this(context, geography, energyManager, id, calendar);
+    public Microgrid(Context<Object> context, Geography<Object> geography, EnergyManager energyManager, Calendar calendar, List<Building> featureList) {
+        this(context, geography, energyManager, calendar);
 
         // Initialisation buildingList, centerList, convexHull
         Geometry centerList = new Polygon(null, null, new GeometryFactory());
@@ -72,8 +69,8 @@ public class Microgrid {
             buildingList.add(building);
             centerList = centerList.union(geom.getCentroid());
             // Affichage de tous les batiments :
-            /*context.add(building);
-            geography.move(building, geom);*/
+//            context.add(building);
+//            geography.move(building, geom);
         }
         setCentroid(centerList.getCentroid().getCoordinate());
         convexHull = centerList.convexHull();

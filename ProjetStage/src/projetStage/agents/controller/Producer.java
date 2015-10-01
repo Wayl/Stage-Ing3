@@ -53,10 +53,10 @@ public class Producer {
     public double allocate(double energy) {
         double available = getPowerAvailable();
         if (available >= energy) {
-            setPowerUsed(powerUsed + energy);
+            setUsed(powerUsed + energy);
             return energy;
         } else {
-            setPowerUsed(powerUsed + available);
+            setUsed(powerUsed + available);
             return available;
         }
     }
@@ -81,7 +81,7 @@ public class Producer {
         return powerUsed;
     }
 
-    public void setPowerUsed(double powerUsed) {
+    public void setUsed(double powerUsed) {
         if (powerUsed > powerMax)
             this.powerUsed = powerMax;
         else if (powerUsed < 0)

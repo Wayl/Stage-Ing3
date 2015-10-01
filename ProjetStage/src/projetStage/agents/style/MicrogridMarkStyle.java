@@ -75,11 +75,12 @@ public class MicrogridMarkStyle implements MarkStyle<MicrogridMark> {
 
     @Override
     public double getScale(MicrogridMark microgridMark) {
-        if (microgridMark.isPowerOn()) {
-            return 0.2;
-        } else {
-            return 0.3;
-        }
+//        if (microgridMark.isPowerOn()) {
+//            return 0.2;
+//        } else {
+//            return 0.3;
+//        }
+        return 0.15;
     }
 
     @Override
@@ -89,7 +90,8 @@ public class MicrogridMarkStyle implements MarkStyle<MicrogridMark> {
 
     @Override
     public String getLabel(MicrogridMark microgridMark) {
-        return Integer.toString(microgridMark.getNbBuilding());
+//        return Integer.toString(microgridMark.getNbBuilding());
+        return null;
     }
 
     @Override

@@ -26,15 +26,13 @@ import projetStage.agents.building.Microgrid;
 
 /**
  * TODO
- * <p/>
  * => Intégrer le profil de charge des batiments DONE
  * => Calcul de la consommation des microgrids en fonction de l'heure DONE
  * Calcul de la production des microgrids en fonction de la météo <=
  * => Avoir en temps réel la production des producteurs DONE
  * => Pouvoir allumer, éteindre un producteur DONE
  * => récupérer les données DONE
- * <p/>
- * <p/>
+ *
  * puissance généré par les PV en 2014 : 8.3% => 235.9GWh pour 173.1MW raccordé
  */
 
@@ -253,7 +251,6 @@ public class ContextCreator implements ContextBuilder<Object> {
         final List<Building> buildingList = new ArrayList<>(); //
         final List<Building> losts = new ArrayList<>();
         int compteur = 0;
-        int compteurGrid = 0;
 
         Iterator<Map.Entry<Double, List<Coordinate>>> it = keyMap.entrySet().iterator();
         while (it.hasNext()) {
@@ -277,7 +274,7 @@ public class ContextCreator implements ContextBuilder<Object> {
                         // On prend tous les batiments qui sont à une distance inférieure à DISTANCE_MAX
                         for (Building building : neighborhoodList) {
                             building.setDistance(building.getGeometry().getCoordinate().distance(center));
-                            if (building.getDistance() < DISTANCE_MAX)
+                            if (building.distance() < DISTANCE_MAX)
                                 buildingList.add(building);
                         }
 
@@ -297,8 +294,7 @@ public class ContextCreator implements ContextBuilder<Object> {
                         } else {
                             // On crée la microgrid avec les batiments selectionnés
                             compteur += buildingList.size();
-                            compteurGrid += 1;
-                            Microgrid microgrid = new Microgrid(context, geography, energyManager, compteurGrid, BEGIN_DATE, buildingList);
+                            Microgrid microgrid = new Microgrid(context, geography, energyManager, BEGIN_DATE, buildingList);
                             microgridMap.get(hashForGrid(microgrid.getCentroid())).add(microgrid);
                             context.add(microgrid);
                         }

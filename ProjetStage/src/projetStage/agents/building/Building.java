@@ -23,16 +23,8 @@ public class Building implements Comparable<Building> {
 		return id;
 	}
 
-	public void setId(String id) {
-		this.id = id;
-	}
-
 	public String getNature() {
 		return nature;
-	}
-
-	public void setNature(String nature) {
-		this.nature = nature;
 	}
 
 	public Geometry getGeometry() {
@@ -43,7 +35,7 @@ public class Building implements Comparable<Building> {
 		this.geom = geom;
 	}
 
-    public double getDistance() {
+    public double distance() {
         return distance;
     }
 
@@ -62,7 +54,7 @@ public class Building implements Comparable<Building> {
 
     @Override
     public int compareTo(Building building) {
-        double dist = building.getDistance() - this.getDistance();
+        double dist = building.distance() - this.distance();
         if(dist > 0)
             return 1;
         if(dist < 0)
