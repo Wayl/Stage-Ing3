@@ -9,38 +9,38 @@ import projetStage.agents.building.Building;
 
 import repast.simphony.visualization.gis3D.style.SurfaceShapeStyle;
 
-public class BuildingStyle implements SurfaceShapeStyle<Building>{
+public class BuildingStyle implements SurfaceShapeStyle<Building> {
 
-	@Override
-	public SurfaceShape getSurfaceShape(Building building, SurfaceShape shape) {
-        if(shape == null)
-		    return new SurfacePolygon();
+    @Override
+    public SurfaceShape getSurfaceShape(Building building, SurfaceShape shape) {
+        if (shape == null)
+            return new SurfacePolygon();
 
         return shape;
-	}
+    }
 
-	@Override
-	public Color getFillColor(Building building) {
-		return Color.BLACK;
-	}
+    @Override
+    public Color getFillColor(Building building) {
+        return Color.BLACK;
+    }
 
-	@Override
-	public double getFillOpacity(Building building) {
-		return 0.50;
-	}
+    @Override
+    public double getFillOpacity(Building building) {
+        return 0.50;
+    }
 
-	@Override
-	public Color getLineColor(Building building) {
-		return Color.BLACK;
-	}
+    @Override
+    public Color getLineColor(Building building) {
+        return Color.BLACK;
+    }
 
-	@Override
-	public double getLineOpacity(Building building) {
-		return 0.5;
-	}
+    @Override
+    public double getLineOpacity(Building building) {
+        return 0.5;
+    }
 
-	@Override
-	public double getLineWidth(Building building) {
-		return 0.1;
-	}
+    @Override
+    public double getLineWidth(Building building) {
+        return 0.1;
+    }
 }

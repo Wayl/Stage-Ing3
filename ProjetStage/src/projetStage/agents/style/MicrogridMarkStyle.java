@@ -49,12 +49,11 @@ public class MicrogridMarkStyle implements MarkStyle<MicrogridMark> {
             return iconEclair;
         else
             return iconEclairRouge;
-        //BufferedImage image imgimgur= PatternFactory.createPattern(PatternFactory.PATTERN_CIRCLE, new Dimension(5, 5), 0.7f, color);
     }
 
     @Override
     public PlaceMark getPlaceMark(MicrogridMark microgridMark, PlaceMark placeMark) {
-        if(placeMark == null) {
+        if (placeMark == null) {
             PlaceMark place = new PlaceMark();
             place.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
             place.setLineEnabled(false);
@@ -75,11 +74,6 @@ public class MicrogridMarkStyle implements MarkStyle<MicrogridMark> {
 
     @Override
     public double getScale(MicrogridMark microgridMark) {
-//        if (microgridMark.isPowerOn()) {
-//            return 0.2;
-//        } else {
-//            return 0.3;
-//        }
         return 0.15;
     }
 
@@ -90,7 +84,6 @@ public class MicrogridMarkStyle implements MarkStyle<MicrogridMark> {
 
     @Override
     public String getLabel(MicrogridMark microgridMark) {
-//        return Integer.toString(microgridMark.getNbBuilding());
         return null;
     }
 

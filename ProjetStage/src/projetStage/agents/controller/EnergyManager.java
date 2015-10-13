@@ -13,6 +13,9 @@ import java.io.*;
 import java.util.*;
 
 /**
+ * Classe permettant d'initialiser les producteurs d'électricité et de répondre aux demandes
+ * d'allocation d'énergie demandées par les microgrid
+ * <p/>
  * Created by wayl on 17/09/15 !
  */
 public class EnergyManager {
@@ -44,7 +47,7 @@ public class EnergyManager {
      * Une microgrid demande de l'énergie
      * On recherche quel est le générateur le plus proche qui peut fournir de l'énergie
      *
-     * @param e énergie demandée
+     * @param e     énergie demandée
      * @param coord coordonnée de la microgrid
      *
      * @return 0 si toute l'énergie a été allouée, sinon l'energie qui n'a pas pu être allouée
@@ -52,16 +55,16 @@ public class EnergyManager {
     public double allocateEnergy(double e, Coordinate coord) {
         double energyTmp = e;
 
-        for(String prod : mapSortedProducer.get(ContextCreator.hashForGrid(coord))) {
+        for (String prod : mapSortedProducer.get(ContextCreator.hashForGrid(coord))) {
             Producer producer = mapProducer.get(prod);
-            if(producer.isActive() && producer.getPowerAvailable() > 0) {
+            if (producer.isActive() && producer.getPowerAvailable() > 0) {
                 energyTmp -= producer.allocate(energyTmp);
             }
-            if(energyTmp <= 0)
+            if (energyTmp <= 0)
                 return 0;
         }
 
-        if(energyTmp > 0) ++nbGridDown;
+        if (energyTmp > 0) ++nbGridDown;
 
         return energyTmp;
     }
@@ -123,7 +126,6 @@ public class EnergyManager {
             }
             List<Double> sortedList = Arrays.asList(map.keySet().toArray(new Double[mapProducer.size()]));
             Collections.sort(sortedList);
-//            Collections.reverse(sortedList);
 
             // On insère les producteurs triés par distance dans la map
             for (Double dist : sortedList) {

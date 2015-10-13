@@ -14,6 +14,12 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
+ * Classe permettant de récupérer les données des gisements solaires à partir du DWH et de les
+ * redistribuer à toutes les microgrids de la simulation
+ * <p/>
+ * Actuellement, une seule mesure d'un capteur est récupérée mais presque tout est en place
+ * pour en récupérer plus
+ * <p/>
  * Created by wayl on 17/08/15 !
  */
 public class Meteo {

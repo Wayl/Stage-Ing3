@@ -25,39 +25,40 @@ import projetStage.agents.controller.Meteo;
 import projetStage.agents.building.Microgrid;
 
 /**
- * TODO
- * => Intégrer le profil de charge des batiments DONE
- * => Calcul de la consommation des microgrids en fonction de l'heure DONE
- * Calcul de la production des microgrids en fonction de la météo <=
- * => Avoir en temps réel la production des producteurs DONE
- * => Pouvoir allumer, éteindre un producteur DONE
- * => récupérer les données DONE
- *
- * puissance généré par les PV en 2014 : 8.3% => 235.9GWh pour 173.1MW raccordé
+ * ContextCreator est la classe qui permet d'initialiser la simulation. La fonction build(Context<Object> context)
+ * est appellée lorsque l'utilisateur clique sur le bouton 'Initialize run', dans la fenêtre de Repast
  */
-
-
 public class ContextCreator implements ContextBuilder<Object> {
     private static final SimpleDateFormat universalFullDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    // Paramètres
+    // Paramètres de la simulation rentrés par l'utilisateur
     private static final int NB_BUILDING_MIN = 1;
     private static int NB_BUILDING_MAX;
     private static double DISTANCE_MAX;
     private static double GRID_DIMENSION;
     private Calendar BEGIN_DATE;
 
-    // Coordonnées de l'île de la Réunion *1000
-    private static final double LONG_MIN = 55215;
-    private static final double LONG_MAX = 55837;
-    private static final double LAT_MIN = -21389;
-    private static final double LAT_MAX = -20871;
+    // Coordonnées de l'île de la Réunion multipliées par 1000
+    private static final double LONG_MIN = 55215;   // Longitude minimale
+    private static final double LONG_MAX = 55837;   // Longitude maximale
+    private static final double LAT_MIN = -21389;   // Latitude minimale
+    private static final double LAT_MAX = -20871;   // Latitude maximale
 
+    /* Structure snécessaires pour travailler avec une grilles qui permet au final de créer
+     * les microgrids beaucoup plus rapidement. La taille des cases de la grille est définie en
+     * fonction du rayon max des microgrid défini par l'utilisateur.
+     * Dans les 3 maps suivantes, Coordinate représente le coin supérieur gauche d'une case de la grille
+     */
+    // Map contenant la liste des bâtiments contenus dans chaque cases de la grille
     private final Map<Coordinate, List<Building>> buildingMap = new HashMap<>();
+    // Map contenant la liste des microgrid contenues dans chaque cases de la grille
     private final Map<Coordinate, List<Microgrid>> microgridMap = new HashMap<>();
+    // Map contenant les cases de la grilles avec en clé, la distance qui les sépare du centre de l'ile
+    // Le but est ensuite de pouvoir travailler avec les cases de la grille en partant de l'exterieur de l'ile
     private final TreeMap<Double, List<Coordinate>> keyMap = new TreeMap<>();
 
-    private EnergyManager energyManager;
+    private EnergyManager energyManager;    // EnergyManager
+
 
     /**
      * Construction et initialisation de la simulation
@@ -74,13 +75,15 @@ public class ContextCreator implements ContextBuilder<Object> {
      */
     public Context<Object> build(Context<Object> context) {
         System.out.println("****** Initialisation ******");
+
+        //Initialisation Geography
         final GeographyParameters<Object> geoParams = new GeographyParameters<>();
         final Geography<Object> geography = GeographyFactoryFinder.createGeographyFactory(null).createGeography("Geography", context, geoParams);
 
         // Début du timer
         long time = System.currentTimeMillis();
 
-        // Lecture des paramètres, création de Meteo, Stat
+        // Lecture des paramètres, création de Meteo, EnergyManager
         readParameters(context, geography);
 
         // Création des microgrids
@@ -92,10 +95,14 @@ public class ContextCreator implements ContextBuilder<Object> {
         return context;
     }
 
+
     /**
-     * Lecture des parametres et chargement des batiments
+     * - Lecture des parametres
+     * - Initialisatin des grilles
+     * - Création des agents EnergyManager et Meteo
+     * - Chargement des batiments
      *
-     * @param context context
+     * @param context   context
      * @param geography geography
      */
     public void readParameters(Context<Object> context, Geography<Object> geography) {
@@ -103,10 +110,14 @@ public class ContextCreator implements ContextBuilder<Object> {
         List<String> types = new ArrayList<>();
         List<String> cities = new ArrayList<>();
 
+        /************************************** PARAMETRES ****************************************/
+
         // Initialisation des variables globales
         NB_BUILDING_MAX = params.getInteger("NB_BUILDING_MAX");
         DISTANCE_MAX = params.getDouble("DISTANCE_MAX");
         GRID_DIMENSION = DISTANCE_MAX * 2 * 1000;
+
+        /**************************************** GRILLES *****************************************/
 
         // Création des grilles
         Map<Coordinate, List<String>> producerMap = new HashMap<>();
@@ -119,12 +130,15 @@ public class ContextCreator implements ContextBuilder<Object> {
             }
         }
 
+        /************************************* ENERGYMANAGER **************************************/
 
         // Création de l'agent EnergyManager et des producteurs d'énergie
         energyManager = new EnergyManager(producerMap);
         energyManager.createProducers(context, geography);
         energyManager.initProducerMap();
         context.add(energyManager);
+
+        /***************************************** METEO ******************************************/
 
         // Récupération et initialisation de la date
         BEGIN_DATE = Calendar.getInstance();
@@ -135,8 +149,13 @@ public class ContextCreator implements ContextBuilder<Object> {
         }
 
         // Création de l'agent Meteo
-        Meteo meteo = new Meteo(BEGIN_DATE);
-        context.add(meteo);
+        boolean m = params.getBoolean("Meteo");
+        if (m) {
+            Meteo meteo = new Meteo(BEGIN_DATE);
+            context.add(meteo);
+        }
+
+        /*************************************** BATIMENTS ****************************************/
 
         // Chargement du profil de consommation
         Map<String, Double> mapConso = loadConso();
@@ -162,7 +181,7 @@ public class ContextCreator implements ContextBuilder<Object> {
             }
         }
 
-        // Récupération des cases de la grille non vide et triage en fonction de leur distance au centre de la carte
+        // Récupération des cases de la grille non vide et stockage en fonction de leur distance au centre de la carte
         Coordinate center = new Coordinate((LONG_MAX + LONG_MIN) / 2, (LAT_MAX + LAT_MIN) / 2);
         for (Map.Entry<Coordinate, List<Building>> entry : buildingMap.entrySet()) {
             if (entry.getValue().size() > 0) {
@@ -175,14 +194,15 @@ public class ContextCreator implements ContextBuilder<Object> {
         }
     }
 
+
     /**
-     * Chargement des fichier shapefile
+     * Chargement des batiments à partir de fichiers shapefiles
      *
      * @param filename Nom du fichier a charger
      * @param mapConso Profil de consommation des batiments
      */
     private void loadFeatures(final String filename, final Map<String, Double> mapConso) {
-        System.out.println("-> Chargement " + filename);
+        System.out.println("-> Loading " + filename);
         try {
             URL url = new File(filename).toURL();
             ShapefileDataStore store = new ShapefileDataStore(url);
@@ -216,6 +236,7 @@ public class ContextCreator implements ContextBuilder<Object> {
         }
     }
 
+
     /**
      * Chargement du profil de consommation des batiments
      *
@@ -240,8 +261,10 @@ public class ContextCreator implements ContextBuilder<Object> {
         return map;
     }
 
+
     /**
-     * Construction des microgrids
+     * Fonction permettant de construire les microgrids en fonction des paramètres entrés par
+     * l'utilisateur et de la position des batiments
      *
      * @param context   Context
      * @param geography Geography
@@ -252,20 +275,19 @@ public class ContextCreator implements ContextBuilder<Object> {
         final List<Building> losts = new ArrayList<>();
         int compteur = 0;
 
-        Iterator<Map.Entry<Double, List<Coordinate>>> it = keyMap.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<Double, List<Coordinate>> entry = it.next();
+        // Pour chaque cases de la grille, en partant de l'exterieur de l'ile
+        for (Map.Entry<Double, List<Coordinate>> entry : keyMap.entrySet()) {
             for (Coordinate coord : entry.getValue()) {
+                // Récupération des batiments de la case actuelle
                 List<Building> actualGridBuildingList = buildingMap.get(coord);
 
                 if (!actualGridBuildingList.isEmpty()) {
-                    // Recuperation de la liste des cases voisines sur la grille
+                    // Recuperation des batiments des cases voisines sur la grille
                     List<Building> neighborhoodList = loadNeighborhood(coord, buildingMap);
                     neighborhoodList.addAll(actualGridBuildingList);
 
-                    // Debut While
-                    while (!actualGridBuildingList.isEmpty()) {
-                        // On prend un batiment au hasard
+                    while (!actualGridBuildingList.isEmpty()) { // Tant que tous les batiments n'ont pas été traités
+                        // On prend un batiment "au hasard" (le premier de la liste)
                         Coordinate center = actualGridBuildingList.get(0).getGeometry().getCentroid().getCoordinate();
                         buildingList.add(actualGridBuildingList.get(0));
                         buildingList.get(0).setDistance(0);
@@ -289,7 +311,7 @@ public class ContextCreator implements ContextBuilder<Object> {
 
                         // Traitement des batiments selectionnés pour constituer une microgrid ou les laisser à l'écart
                         if (buildingList.size() <= NB_BUILDING_MIN) {
-                            // On stocke les batiments les plus isolés dans une liste pour les retraiter ensuite
+                            // On stocke les batiments les plus isolés dans une liste pour les retraiter par la suite
                             losts.addAll(buildingList);
                         } else {
                             // On crée la microgrid avec les batiments selectionnés
@@ -310,10 +332,10 @@ public class ContextCreator implements ContextBuilder<Object> {
                 } // Fin While
             }
         }
-        System.out.println("compteur fin : " + compteur);
+        System.out.println("Number of buildings used for microgrids : " + compteur);
 
         // Récupération des batiments perdus
-        System.out.println("Tentative de récupération de " + losts.size() + " batiments");
+        System.out.println(losts.size() + " buildings lost !");
         Coordinate key = null;
         List<Microgrid> neighborhoodList = new ArrayList<>();
         compteur = 0;
@@ -341,10 +363,11 @@ public class ContextCreator implements ContextBuilder<Object> {
                 geography.move(buildingLost, buildingLost.getGeometry());
             }
         }
-        System.out.println(compteur + " batiments récupérés");
+        System.out.println(compteur + " buildings recovered");
 
         System.out.println("****** End of microgrids' creation ******");
     }
+
 
     /**
      * Chargement des cases voisines a la case donc les coordonnees sont "coord"
@@ -357,30 +380,22 @@ public class ContextCreator implements ContextBuilder<Object> {
     public <T> List<T> loadNeighborhood(Coordinate point, Map<Coordinate, List<T>> map) {
         List<T> neighborhoodList = new ArrayList<>();
 
-        Coordinate coord = new Coordinate(point.x + GRID_DIMENSION, point.y); // Est
-        if (buildingMap.containsKey(coord))
-            neighborhoodList.addAll(map.get(coord));
+        Coordinate coord = new Coordinate(point.x + GRID_DIMENSION, point.y);       // Est
+        if (buildingMap.containsKey(coord)) neighborhoodList.addAll(map.get(coord));
         coord = new Coordinate(point.x + GRID_DIMENSION, point.y + GRID_DIMENSION); // Sud-Est
-        if (buildingMap.containsKey(coord))
-            neighborhoodList.addAll(map.get(coord));
-        coord = new Coordinate(point.x, point.y + GRID_DIMENSION); // Sud
-        if (buildingMap.containsKey(coord))
-            neighborhoodList.addAll(map.get(coord));
+        if (buildingMap.containsKey(coord)) neighborhoodList.addAll(map.get(coord));
+        coord = new Coordinate(point.x, point.y + GRID_DIMENSION);                  // Sud
+        if (buildingMap.containsKey(coord)) neighborhoodList.addAll(map.get(coord));
         coord = new Coordinate(point.x - GRID_DIMENSION, point.y + GRID_DIMENSION); // Sud-Ouest
-        if (buildingMap.containsKey(coord))
-            neighborhoodList.addAll(map.get(coord));
-        coord = new Coordinate(point.x - GRID_DIMENSION, point.y); // Ouest
-        if (buildingMap.containsKey(coord))
-            neighborhoodList.addAll(map.get(coord));
+        if (buildingMap.containsKey(coord)) neighborhoodList.addAll(map.get(coord));
+        coord = new Coordinate(point.x - GRID_DIMENSION, point.y);                  // Ouest
+        if (buildingMap.containsKey(coord)) neighborhoodList.addAll(map.get(coord));
         coord = new Coordinate(point.x - GRID_DIMENSION, point.y - GRID_DIMENSION); // Nord-Ouest
-        if (buildingMap.containsKey(coord))
-            neighborhoodList.addAll(map.get(coord));
-        coord = new Coordinate(point.x, point.y - GRID_DIMENSION); // Nord
-        if (buildingMap.containsKey(coord))
-            neighborhoodList.addAll(map.get(coord));
-        coord = new Coordinate(point.x + GRID_DIMENSION, point.y - GRID_DIMENSION);// Nord-Est
-        if (buildingMap.containsKey(coord))
-            neighborhoodList.addAll(map.get(coord));
+        if (buildingMap.containsKey(coord)) neighborhoodList.addAll(map.get(coord));
+        coord = new Coordinate(point.x, point.y - GRID_DIMENSION);                  // Nord
+        if (buildingMap.containsKey(coord)) neighborhoodList.addAll(map.get(coord));
+        coord = new Coordinate(point.x + GRID_DIMENSION, point.y - GRID_DIMENSION); // Nord-Est
+        if (buildingMap.containsKey(coord)) neighborhoodList.addAll(map.get(coord));
 
         return neighborhoodList;
     }

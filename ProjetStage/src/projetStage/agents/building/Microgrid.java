@@ -14,29 +14,36 @@ import repast.simphony.context.Context;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.space.gis.Geography;
 
+
+/**
+ * Classe représentant une microgrid
+ */
 public class Microgrid {
     EnergyManager energyManager;
     private Context<Object> context;
     private Geography<Object> geography;
-    private MicrogridMark microgridMark;
+    private MicrogridMark microgridMark;    // Mark de la microgrid
     private List<Building> buildingList;    // Liste des batiments contenus dans cette microgrid
     private Geometry convexHull;            // Plus petit polygone convexe contenant tous les batiments de la microgrid
     private LineString line;                // Ligne représentant la convexHull
     private Coordinate centroid;            // Barycentre de la microgrid
 
-    private double conso = 0;
-    private double prod = 0;
+    private double conso = 0;               // Consommation totale des batiments contenus dans la microgrid
+    private double prod = 0;                // Production totale des batiments contenus dans la microgrid (non fonctionnel)
 
+    // Le temps de la simulation. Ces attributs ne sont là que pour pouvoir visualiser le temps dans
+    // la simulation en sélectionnant une microgrid. Mis à part ça, cette information n'a pas grand
+    // chose à faire là et devrait plutôt être communiquée par l'agent Meteo par exemple.
     private int hour;
     private int minute;
 
     /**
      * Constructeur par défaut
      *
-     * @param context   Context
-     * @param geography Geography
+     * @param context       Context
+     * @param geography     Geography
      * @param energyManager EnergyManager
-     * @param calendar  Date de début de la simulation
+     * @param calendar      Date de début de la simulation
      */
     public Microgrid(Context<Object> context, Geography<Object> geography, EnergyManager energyManager, Calendar calendar) {
         this.context = context;
@@ -68,7 +75,8 @@ public class Microgrid {
             Geometry geom = building.getGeometry();
             buildingList.add(building);
             centerList = centerList.union(geom.getCentroid());
-            // Affichage de tous les batiments :
+            // Affichage de tous les batiments. Décommentez les 2 lignes suivantes si vous souhaitez
+            // afficher tous les batiments. Attention, cela demande beaucoup plus de ressources.
 //            context.add(building);
 //            geography.move(building, geom);
         }
@@ -90,6 +98,8 @@ public class Microgrid {
     /**
      * STEP
      * Méthode effectuée à chaque step
+     * On avance le temps d'une minute
+     * On calcul la consommation et production totale de la microgrid
      */
     @ScheduledMethod(start = 0, interval = 1, priority = 1)
     public void step() {
@@ -126,7 +136,7 @@ public class Microgrid {
     }
 
     /**
-     * AJout d'un batiment dans la microgrid
+     * Ajout d'un batiment dans la microgrid
      *
      * @param building Batiment à ajouter
      */
@@ -171,6 +181,9 @@ public class Microgrid {
         return minute;
     }
 
+    /**
+     * Calcul de la consommation totale des batiments contenus dans la microgrid
+     */
     public void calcConso() {
         String temps = "";
         if (hour < 10)
@@ -190,9 +203,13 @@ public class Microgrid {
             microgridMark.setPowerOn(false);
         else
             microgridMark.setPowerOn(true);
-
     }
 
+    /**
+     * Calcul de la production totale des batiments contenus dans la microgrid
+     * Non implémentée, il faut calculer la production des panneaux solaires de chaque batiments
+     * en fonction de l'heure de la journée et des données des gisements solaires du DWH
+     */
     public void calcProd() {
         prod = 0;
     }

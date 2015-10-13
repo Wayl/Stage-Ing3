@@ -4,15 +4,17 @@ import com.vividsolutions.jts.geom.Coordinate;
 import repast.simphony.engine.schedule.ScheduledMethod;
 
 /**
+ * Classe représentant un producteur d'électricité
+ * <p/>
  * Created by wayl on 19/08/15 !
  */
 public class Producer {
-    private String name;
-    private String type;
-    private double powerMax;
-    private double powerUsed;
-    private boolean active;
-    private Coordinate coord;
+    private String name;        // Nom du producteur
+    private String type;        // Type de producteur (solaire, éolien, charbon, ...)
+    private double powerMax;    // Puissance maximale
+    private double powerUsed;   // Puissance utilisée
+    private boolean active;     // True si le producteur est actif, false sinon
+    private Coordinate coord;   // Coordonnées du producteur
 
 
     /**
